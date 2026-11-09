@@ -1574,8 +1574,8 @@ function drawWhiteNight(t){
 }
 /* 탄환 장면
    ① 마루키의 금빛 쐐기가 하늘을 접어 누르며 내려온다.
-   ② 조커의 손에서 가는 푸른 탄도 하나가 곧게 위로 뻗어, 쐐기의 꼭짓점과 맞선다.
-   ③ 버티던 금빛이 탄도를 따라 세로로 갈라지고, 백야가 그 틈에서부터 열리며 밑의 밤이 드러난다.
+   ② 조커의 손에서 총알 하나가 위로 날아가 쐐기의 꼭짓점에 박혀 버틴다.
+   ③ 총알이 끝내 꿰뚫으면 금빛이 세로로 갈라지고, 백야가 그 틈에서부터 열리며 밑의 밤이 드러난다.
    빛줄기와 초승달 같은 파편이 양옆으로 흩어진다. */
 const GOLD = ['#6E4A1C', '#A8782A', '#D9AE52', '#F2D58C', '#FFF4D6'];
 const BLUE = ['#1C3F78', '#3570B4', '#8EC8F2', '#D6F1FF', '#FFFFFF'];
@@ -1642,17 +1642,24 @@ function stepParts(B, dt, t){
     } else { f.fillStyle = p.col; f.fillRect(Math.round(p.x), Math.round(p.y), 1, 1); }
   }
 }
-// 탄도: 흰 심, 옅은 푸른 테, 바깥으로 성겨지는 푸른 번짐
-function beam(f, x, y0, y1, w, t){
-  if (y1 - y0 < 1) return;
-  const sh = (t / 70) | 0;
-  for (let d = w + 1; d >= 2; d--) {
-    const dens = (1 - (d - 1) / (w + 1.5)) * .95;
-    f.fillStyle = d < 4 ? BLUE[2] : BLUE[1];
-    for (let y = y0; y < y1; y++) { if (dens > bay(x + d, y + sh)) f.fillRect(x + d, y, 1, 1); if (dens > bay(x - d, y + sh + 2)) f.fillRect(x - d, y, 1, 1); }
+// 총알: 짙은 테두리 안에 은빛·푸른빛. (x, y)는 탄두 끝
+const BUL = ['....o....', '...owo...', '..owwlo..', '..owllo..', '.owwlllo.', '.owlllmo.', '.owlllmo.', '.owlllmo.', '.owlllmo.', '.owlllmo.', '.owllmmo.', '.ooooooo.'];
+const BULC = {o:'#0E1530', w:'#FFFFFF', l:'#D6F1FF', m:'#8EC8F2'};
+function bullet(f, x, y, t){
+  // 은은하게 깜빡이는 푸른 기운
+  const sh = (t / 60) | 0;
+  for (let j = -5; j < 18; j++) for (let i = -7; i <= 7; i++) {
+    const d = Math.hypot(i * 1.25, (j - 6) * .7), v = (1 - d / 9) * .8;
+    if (v > 0 && v > bay(x + i, y + j + sh)) { f.fillStyle = v > .45 ? BLUE[3] : BLUE[2]; f.fillRect(x + i, y + j, 1, 1); }
   }
-  f.fillStyle = BLUE[3]; f.fillRect(x - 1, y0, 1, y1 - y0); f.fillRect(x + 1, y0, 1, y1 - y0);
-  f.fillStyle = BLUE[4]; f.fillRect(x, y0, 1, y1 - y0);
+  BUL.forEach((row, j) => [...row].forEach((c, i) => { if (c !== '.') { f.fillStyle = BULC[c]; f.fillRect(x - 4 + i, y + j, 1, 1); } }));
+}
+// 총알 뒤로 짧게 남는 궤적
+function tracer(f, x, y, L){
+  for (let d = 0; d < L; d++) {
+    const v = (1 - d / L) * .95;
+    for (const i of [-1, 0, 1]) if (v * (i ? .55 : 1) > bay(x + i, y + d)) { f.fillStyle = i ? BLUE[2] : d < L * .3 ? BLUE[4] : BLUE[3]; f.fillRect(x + i, y + d, 1, 1); }
+  }
 }
 function star4(f, x, y, L, col){ f.fillStyle = col; f.fillRect(x - L, y, L * 2 + 1, 1); f.fillRect(x, y - L, 1, L * 2 + 1); f.fillRect(x - 1, y - 1, 3, 3); }
 // 수평으로 번지는 빛 (탄도의 밑동)
@@ -1662,10 +1669,7 @@ function hflare(f, x, y, L, k){
 // 열린 틈의 반폭: 탄도 밑동에서는 좁고, 위로 갈수록 넓어진다
 function openHW(B, y, t){
   const P = B.plan, oy = P.from[1];
-  if (!B.breakAt || t < B.breakAt) {                       // 쏜 직후: 탄도를 따라 가는 틈
-    const head = B.head; if (y < head || y > oy + 2) return 0;
-    return 1.5 + (B.pierceAt && t >= B.pierceAt ? 1.5 : 0) + Math.sin(y * .7 + t / 40) * .5;
-  }
+  if (!B.breakAt || t < B.breakAt) return 0;
   const k = (t - B.breakAt) / 1000, p = easeOut(k / 1.15);
   const up = Math.max(0, (oy - y) / oy);
   let hw = 3 + p * (SW * .04 + SW * .58 * Math.pow(up, 1.25));
@@ -1697,17 +1701,11 @@ function drawBullet(t){
   if (B.fx.width !== SW || B.fx.height !== SH) { B.fx.width = SW; B.fx.height = SH; }
   const dt = Math.min(.05, (t - (B.lt || t)) / 1000); B.lt = t;
   f.clearRect(0, 0, SW, SH);
-  // 탄도의 머리: 쏜 뒤 0.22초 만에 꼭짓점에 닿고, 갈라진 뒤에는 하늘 끝까지
-  if (B.shotAt && t >= B.shotAt) {
-    const s = (t - B.shotAt) / 1000;
-    B.head = Math.round(oy - (oy - P.ay) * easeOut(s / .22));
-    if (B.pierceAt && t >= B.pierceAt) B.head = Math.round(P.ay - P.ay * easeOut((t - B.pierceAt) / 160));
-  }
-  // 하늘: 쏘기 전엔 백야 그대로, 쏜 뒤로는 틈이 열린다
+  const pierced = B.pierceAt && t >= B.pierceAt, broke = B.breakAt && t >= B.breakAt;
+  // 하늘: 터지기 전엔 백야 그대로, 터진 뒤로는 총알이 지나간 자리부터 열린다
   let q = 0;
-  if (B.shotAt && t >= B.shotAt) q = composeSky(B, t); else { sx.globalAlpha = 1; sx.drawImage(getInvBase(), 0, 0); }
-  // 열린 틈의 가장자리에 푸른 빛이 고인다
-  if (B.shotAt && t >= B.shotAt && q < .34) {
+  if (broke) q = composeSky(B, t); else { sx.globalAlpha = 1; sx.drawImage(getInvBase(), 0, 0); }
+  if (broke && q < .34) {
     const sh = (t / 60) | 0;
     for (let y = 0; y < SH; y++) {
       const hw = openHW(B, y, t); if (hw < 1) continue;
@@ -1720,12 +1718,12 @@ function drawBullet(t){
       }
     }
   }
-  // 금빛 쐐기: 내려오고 → 탄도와 맞서 떨고 → 세로로 갈라져 물러난다
+  // 금빛 쐐기: 내려오고 → 박힌 총알에 떨고 → 세로로 갈라져 물러난다
   {
     const kIn = easeOut((t - B.start) / (reduced ? 200 : 1900));
     let dy = Math.round(-(P.ay + 12) * (1 - kIn)), jx = 0;
-    if (B.shotAt && t >= B.shotAt && !(B.pierceAt && t >= B.pierceAt)) { jx = Math.round((hash(t | 0, 7) - .5) * 3); dy += Math.round((hash(t | 0, 9) - .5) * 2) - 1; }
-    if (!B.pierceAt || t < B.pierceAt) f.drawImage(P.cone, jx, dy);
+    if (B.hitAt && t >= B.hitAt && !pierced) { jx = Math.round((hash(t | 0, 7) - .5) * 3); dy += Math.round((hash(t | 0, 9) - .5) * 2) - 1; }
+    if (!pierced) f.drawImage(P.cone, jx, dy);
     else {
       const k = (t - B.pierceAt) / 1000, sp = easeOut(k / 1.1) * SW * .7, lift = Math.round(-k * k * 30);
       if (k < 1.3) for (const sg of [-1, 1]) {
@@ -1738,28 +1736,36 @@ function drawBullet(t){
   }
   if (!B.shotAt || t < B.shotAt) {
     // 조커의 손: 백야 위의 짙은 별 하나
-    const on = Math.sin(t / 260) > 0;
-    star4(f, ox, oy, on ? 3 : 2, '#0E1530');
+    star4(f, ox, oy, Math.sin(t / 260) > 0 ? 3 : 2, '#0E1530');
   } else {
-    const s = (t - B.shotAt) / 1000;
-    const pierced = B.pierceAt && t >= B.pierceAt, broke = B.breakAt && t >= B.breakAt;
-    let w = pierced ? 5 : 1 + ((t / 55 | 0) % 3 === 0 ? 1 : 0);   // 맞서는 동안은 가늘게 떤다
-    if (broke) { const k = (t - B.breakAt) / 1000; w = Math.max(0, Math.round(6 - k * 3.4)); }
-    const fadeK = broke ? (t - B.breakAt) / 1000 : 0;
-    if (fadeK < 1.9) beam(f, ox, B.head, oy + 1, w, t);
-    // 총구: 퍼지는 점선 고리와 수평으로 번지는 빛
+    const s = (t - B.shotAt) / 1000, FLY = reduced ? .2 : .55;
+    const stopY = P.ay + 2;                                   // 탄두 끝이 꼭짓점에 박히는 자리
+    let by, L;
+    if (!pierced) {
+      const k = Math.min(1, s / FLY);
+      by = Math.round(oy - 12 - (oy - 12 - stopY) * (1 - Math.pow(1 - k, 2)));
+      L = Math.round(Math.min(oy - by, 46) * (k < 1 ? 1 : Math.max(.2, 1 - (s - FLY) * 3)));
+      if (k >= 1) { if (!B.hitAt) B.hitAt = t; by += Math.round((hash(t | 0, 3) - .5) * 2); }
+    } else {
+      const k = (t - B.pierceAt) / 1000;
+      by = Math.round(stopY - (stopY + 34) * Math.min(1, Math.pow(k / .28, 2)));
+      L = 52;
+    }
+    // 총구: 섬광, 퍼지는 점선 고리, 수평으로 번지는 빛
     if (s < .5) { f.fillStyle = BLUE[3]; const r = Math.round(3 + s * 34); for (let a = 0; a < 6.28; a += 3 / r) f.fillRect(Math.round(ox + Math.cos(a) * r), Math.round(oy + Math.sin(a) * r * .5), 1, 1); }
     if (s < .7) hflare(f, ox, oy, Math.round(easeOut(s / .25) * SW * .45), s / .7);
-    star4(f, ox, oy, 3 + (s < .15 ? 3 : 0), BLUE[4]);
-    // 맞닿은 꼭짓점: 불꽃이 튄다
-    if (!pierced && s > .2) {
-      star4(f, ox, P.ay + 1, 2 + ((t / 60 | 0) % 3), (t / 80 | 0) % 2 ? BLUE[4] : GOLD[4]);
-      spawn(B, 2, () => ({kind:'dot', x:ox + (Math.random() - .5) * 3, y:P.ay + 1, vx:(Math.random() - .5) * 3.2, vy:-Math.random() * 1.6 - .2, drag:.93, g:.06, life:.35 + Math.random() * .3, born:t, col:Math.random() < .6 ? GOLD[3] : BLUE[3]}));
+    if (s < .5) star4(f, ox, oy, s < .12 ? 7 : 3, BLUE[4]);
+    else if (!broke) star4(f, ox, oy, 2, '#0E1530');
+    // 총알과 궤적
+    if (by > -18) { tracer(f, ox, by + 12, L); bullet(f, ox, by, t); }
+    // 꼭짓점에 박혀 버티는 동안: 불꽃이 튄다
+    if (B.hitAt && !pierced) {
+      star4(f, ox, stopY - 1, 2 + ((t / 60 | 0) % 3), (t / 80 | 0) % 2 ? BLUE[4] : GOLD[4]);
+      spawn(B, 2, () => ({kind:'dot', x:ox + (Math.random() - .5) * 4, y:stopY, vx:(Math.random() - .5) * 3.4, vy:-Math.random() * 1.4 - .2, drag:.93, g:.07, life:.35 + Math.random() * .3, born:t, col:Math.random() < .6 ? GOLD[3] : BLUE[3]}));
     }
     if (broke) {
       const k = (t - B.breakAt) / 1000;
       if (k < .55) hflare(f, ox, oy, Math.round(easeOut(k / .3) * SW * .55), k / .55);
-      // 틈의 가장자리를 따라 위로, 바깥으로 흩어지는 빛줄기
       if (k < 1.2) spawn(B, 3, () => {
         const y = Math.random() * oy, sg = Math.random() < .5 ? -1 : 1, hw = openHW(B, y | 0, t);
         const sp = 1.6 + Math.random() * 2.2;
@@ -1780,18 +1786,18 @@ async function bulletBeat(g){
   const mon = document.querySelector('.monitor');
   choicesEl.innerHTML = '';
   const turn = el('button', 'turn', '조커의 차례'); turn.type = 'button'; turn.disabled = true; choicesEl.append(turn);
-  announce('조커의 차례. 내려누르는 금빛을 향해 푸른 탄도 하나가 뻗고, 금빛이 갈라지며 백야가 열린다.');
+  announce('조커의 차례. 내려누르는 금빛을 향해 총알 하나가 날아가 박히고, 끝내 꿰뚫는다. 금빛이 갈라지며 백야가 열린다.');
   if (soundOn && master) { master.gain.setTargetAtTime(0, actx.currentTime, .15); bulletSound(); }
   const fx = el('canvas', 'cut fxcv'); fx.setAttribute('aria-hidden', 'true'); fx.width = SW; fx.height = SH; screen.append(fx);
   const now = () => performance.now();
-  bulletFx = {plan: planShot(), start: now(), shotAt: 0, pierceAt: 0, breakAt: 0, head: 0, parts: [], fx, fc: fx.getContext('2d')};
+  bulletFx = {plan: planShot(), start: now(), shotAt: 0, hitAt: 0, pierceAt: 0, breakAt: 0, parts: [], fx, fc: fx.getContext('2d')};
   const B = bulletFx;
   if (!reduced) screen.classList.add('goldhot');
   // ① 금빛이 하늘을 접어 누르며 내려온다
   await sleep(reduced ? 300 : 1900);
   screen.classList.add('whitehold');
   await sleep(reduced ? 200 : 1000);
-  // ② 격발: 가는 푸른 탄도가 곧게 뻗어 꼭짓점과 맞선다
+  // ② 격발: 총알이 위로 날아가 꼭짓점에 박혀 버틴다
   B.shotAt = now();
   if (!reduced) { mon.classList.add('hitflash'); await sleep(70); mon.classList.remove('hitflash'); mon.classList.add('hitshake'); setTimeout(() => mon.classList.remove('hitshake'), 360); }
   await sleep(reduced ? 500 : 1500);
