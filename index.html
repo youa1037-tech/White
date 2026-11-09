@@ -147,6 +147,7 @@ button:focus-visible{outline:2px dashed var(--frost);outline-offset:1px}
 .cut line{stroke:#0E1530;stroke-width:2;stroke-dasharray:1;stroke-dashoffset:1}
 .cut.on line{stroke-dashoffset:0;transition:stroke-dashoffset .22s linear}
 .cut.fade{opacity:0;transition:opacity .9s}
+.fxcv{image-rendering:pixelated}
 .choices button.turn{animation:turnpulse 1s steps(2) infinite}
 @keyframes turnpulse{50%{box-shadow:inset 0 0 0 2px #B44C66}}
 .choices button.turn{opacity:.55;cursor:default}
@@ -1295,7 +1296,7 @@ async function run(nodes, g){
     else if (n.t === 'bullet') await bulletBeat(g);
     else if (n.t === 'wait') await waitNext(g);
     else if (n.t === 'sysline') await sys(n.x);
-    else if (n.t === 'dayglow') { dayGlow = true; screen.classList.add('brightsky'); state.starsGone = true; state.erased = true; screen.classList.remove('goldout'); document.querySelector('.tb-user').textContent = '아케치 고로'; snowOn = false; if (reduced) draw(performance.now()); }
+    else if (n.t === 'dayglow') { clearInterval(clockTimer); dayGlow = true; screen.classList.add('brightsky'); state.starsGone = true; state.erased = true; screen.classList.remove('goldout'); document.querySelector('.tb-user').textContent = '아케치 고로'; snowOn = false; if (reduced) draw(performance.now()); }
     else if (n.t === 'fade') { const b = line('ln-sw'); const tok = newTok(); await typeText(b.appendChild(document.createTextNode('')), n.x, () => 90, tok); endTok(tok); await sleep(700); b.parentElement.classList.add('fadeout'); await sleep(700); b.parentElement.remove(); }
     else if (n.t === 'whitenight') { whiteNight = true; screen.classList.add('brightsky'); if (reduced) draw(performance.now()); }
     else if (n.t === 'whiteout') { const w = el('div', 'whiteout'); screen.append(w); await sleep(reduced ? 300 : 1700); w.remove(); textEl.innerHTML = ''; }
@@ -1552,15 +1553,6 @@ function dline(a, b){
 // 백야 = 밤하늘의 밝기를 뒤집은 하늘. 은하수의 결만 남고 별자리는 보이지 않는다.
 let bulletFx = null, whiteNight = false, invBase = null, dayGlow = false;
 function drawDay(){ sx.globalAlpha = 1; sx.drawImage(getInvBase(), 0, 0); sx.globalAlpha = .2; sx.fillStyle = '#E8D9B0'; sx.fillRect(0, 0, SW, SH); sx.globalAlpha = 1; }
-let bulletSilver = null;
-const bulletImg = new Image();
-bulletImg.onload = () => {
-  const c = document.createElement('canvas'); c.width = bulletImg.width; c.height = bulletImg.height;
-  const x = c.getContext('2d'); x.drawImage(bulletImg, 0, 0); const img = x.getImageData(0, 0, c.width, c.height), d = img.data;
-  for (let i = 0; i < d.length; i += 4) { if (!d[i + 3]) continue; const L = .3 * d[i] + .59 * d[i + 1] + .11 * d[i + 2]; if (L < 40) continue; const v = Math.min(255, 40 + L * .95); d[i] = Math.max(0, v - 10); d[i + 1] = Math.max(0, v - 4); d[i + 2] = Math.min(255, v + 8); }
-  x.putImageData(img, 0, 0); bulletSilver = c;
-};
-bulletImg.src = 'data:image/png;base64,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';
 function deskPt(fx, fy){
   const s = screen.getBoundingClientRect(), r = $('desk').getBoundingClientRect();
   return [Math.round((r.left - s.left + r.width * fx) / PX), Math.round((r.top - s.top + r.height * fy) / PX)];
@@ -1580,118 +1572,241 @@ function drawWhiteNight(t){
   if (on) { sx.fillRect(x - 2, y, 5, 1); sx.fillRect(x, y - 2, 1, 5); sx.fillRect(x - 1, y - 1, 3, 3); } else sx.fillRect(x, y, 1, 1);
   sx.globalAlpha = 1;
 }
-// 탄도와 균열: 조커의 손에서 오른쪽 위로. 명중점에서 화면 끝까지 곧은 금이 뻗는다.
+/* 탄환 장면
+   ① 마루키의 금빛 쐐기가 하늘을 접어 누르며 내려온다.
+   ② 조커의 손에서 가는 푸른 탄도 하나가 곧게 위로 뻗어, 쐐기의 꼭짓점과 맞선다.
+   ③ 버티던 금빛이 탄도를 따라 세로로 갈라지고, 백야가 그 틈에서부터 열리며 밑의 밤이 드러난다.
+   빛줄기와 초승달 같은 파편이 양옆으로 흩어진다. */
+const GOLD = ['#6E4A1C', '#A8782A', '#D9AE52', '#F2D58C', '#FFF4D6'];
+const BLUE = ['#1C3F78', '#3570B4', '#8EC8F2', '#D6F1FF', '#FFFFFF'];
+const bay = (x, y) => BAYER[(y & 3) * 4 + (x & 3)];
+const easeOut = k => 1 - Math.pow(1 - Math.max(0, Math.min(1, k)), 3);
 function planShot(){
-  const from = deskPos('joker_hand'), dir = [1, -.62], n = Math.hypot(dir[0], dir[1]);
-  const ux = dir[0] / n, uy = dir[1] / n;
-  let tmax = 1e9;
-  if (ux > 0) tmax = Math.min(tmax, (SW - 1 - from[0]) / ux);
-  if (uy < 0) tmax = Math.min(tmax, (0 - from[1]) / uy);
-  const d = Math.max(20, tmax * .72), to = [from[0] + ux * d, from[1] + uy * d];
-  const N = 11, rays = [];
-  for (let i = 0; i < N; i++) {
-    const a = (i / N) * Math.PI * 2 + (Math.random() - .5) * .35;
-    const ca = Math.cos(a), sa = Math.sin(a);
-    let tt = 1e9;
-    if (ca > 0) tt = Math.min(tt, (SW - to[0]) / ca); if (ca < 0) tt = Math.min(tt, (0 - to[0]) / ca);
-    if (sa > 0) tt = Math.min(tt, (SH - to[1]) / sa); if (sa < 0) tt = Math.min(tt, (0 - to[1]) / sa);
-    rays.push({a, end:[to[0] + ca * tt, to[1] + sa * tt]});
+  const from = deskPos('joker_hand'), ax = from[0];
+  const ay = Math.max(16, Math.round(from[1] * .56));         // 쐐기의 꼭짓점
+  const cone = document.createElement('canvas'); cone.width = SW; cone.height = SH;
+  const c = cone.getContext('2d');
+  const put = (x, y, col) => { c.fillStyle = col; c.fillRect(x, y, 1, 1); };
+  // 하늘 위쪽을 덮는 금빛 구름
+  const hz = Math.round(ay * .8);
+  for (let y = 0; y < hz; y++) for (let x = 0; x < SW; x++) {
+    const v = (1 - y / hz) * (.42 + .3 * Math.sin(x * .045 + y * .09) + .18 * Math.sin(x * .13 - y * .05)) + (hash(x, y) - .5) * .2;
+    if (v > bay(x, y)) put(x, y, v > .75 ? GOLD[3] : v > .5 ? GOLD[2] : GOLD[1]);
   }
-  rays.sort((p, q) => p.a - q.a);
-  const corners = [[SW, SH], [0, SH], [0, 0], [SW, 0]].map(c => ({c, a:Math.atan2(c[1] - to[1], c[0] - to[0])}));
-  const norm = a => (a + Math.PI * 4) % (Math.PI * 2);
-  const shards = rays.map((r, i) => {
-    const r2 = rays[(i + 1) % N], a0 = norm(r.a), a1 = norm(r2.a), span = norm(a1 - a0);
-    const inner = corners.filter(k => norm(norm(k.a) - a0) < span).sort((p, q) => norm(norm(p.a) - a0) - norm(norm(q.a) - a0)).map(k => k.c);
-    const poly = [to, r.end, ...inner, r2.end];
-    const cx = poly.reduce((s, p) => s + p[0], 0) / poly.length, cy = poly.reduce((s, p) => s + p[1], 0) / poly.length;
-    const dl = Math.hypot(cx - to[0], cy - to[1]) || 1;
-    return {poly, cx, cy, vx:(cx - to[0]) / dl * (1.2 + Math.random()), vy:(cy - to[1]) / dl * (1.2 + Math.random()) - .6, vr:(Math.random() - .5) * .05};
-  });
-  return {from, to, rot:Math.atan2(uy, ux) - Math.atan2(1, -1), rays, shards};
+  // 꼭짓점이 아래를 향한 쐐기. 결이 꼭짓점에서 위로 부챗살처럼 퍼진다.
+  const topHW = Math.round(SW * .27), H = ay + 4;
+  for (let y = 0; y <= ay + 7; y++) {
+    const k = Math.max(0, (ay - y) / H), hw = topHW * Math.pow(k, .9) + .6;
+    for (let x = Math.floor(ax - hw - 7); x <= Math.ceil(ax + hw + 7); x++) {
+      if (x < 0 || x >= SW) continue;
+      const dx = Math.abs(x - ax);
+      if (dx <= hw && y <= ay) {
+        const edge = dx / hw, ang = Math.atan2(x - ax, ay - y + .5);
+        const ray = Math.pow(Math.max(0, Math.sin(ang * 26 + 1.3)), 5) * .3 * (1 - edge * .6);
+        put(x, y, dpick(GOLD, .98 - k * .45 - edge * .4 + ray + (hash(x + 3, y) - .5) * .12, x, y));
+      } else {
+        const d = Math.max(dx - hw, y - ay), v = (1 - d / 7) * .65;
+        if (d > 0 && v > bay(x, y)) put(x, y, d < 3 ? GOLD[3] : GOLD[2]);
+      }
+    }
+  }
+  return {from, ax, ay, cone};
 }
-// 이펙트 (백야 위라 짙은 남색으로): 원 → 터짐 → 초승달 고리 → 점선 고리
-function burstFx(x, y, ms, s){
-  const k = ms / 1000; sx.fillStyle = '#0E1530'; sx.globalAlpha = 1;
-  const disc = r => { for (let dy = -r; dy <= r; dy++) { const w = Math.round(Math.sqrt(r * r - dy * dy)); sx.fillRect(Math.round(x) - w, Math.round(y) + dy, w * 2 + 1, 1); } };
-  const ring = (r, step, from, to) => { for (let a = from; a < to; a += step / Math.max(r, 1)) sx.fillRect(Math.round(x + Math.cos(a) * r), Math.round(y + Math.sin(a) * r), 1, 1); };
-  if (k < .07) disc(Math.round(5 * s));
-  else if (k < .16) { disc(Math.round(3 * s)); for (let i = 0; i < 10; i++) { const a = i / 10 * 6.283 + i, L = (5 + (i % 3) * 3) * s; dline([x, y], [x + Math.cos(a) * L, y + Math.sin(a) * L]); } }
-  else if (k < .3) { ring(Math.round(8 * s), 1, -2.2, 2.2); ring(Math.round(8 * s) - 1, 1, -1.6, 1.6); }
-  else if (k < .5) ring(Math.round(12 * s), 3, -2.4, 2.4);
+// 같은 자리에서 생기는 파편 모양: 초승달 (크기 3종 × 방향 8종 × 색 3종)
+const CRES = {};
+function cres(r, a, col){
+  const key = r + ':' + a + ':' + col; if (CRES[key]) return CRES[key];
+  const s = r * 2 + 3, cv = document.createElement('canvas'); cv.width = cv.height = s;
+  const x = cv.getContext('2d'); x.fillStyle = col;
+  const ang = a / 8 * Math.PI * 2, ox = Math.cos(ang) * r * .55, oy = Math.sin(ang) * r * .55;
+  for (let j = 0; j < s; j++) for (let i = 0; i < s; i++) {
+    const px = i - s / 2 + .5, py = j - s / 2 + .5;
+    if (px * px + py * py <= r * r && (px - ox) ** 2 + (py - oy) ** 2 > (r * .82) ** 2) x.fillRect(i, j, 1, 1);
+  }
+  return (CRES[key] = cv);
+}
+function spawn(B, n, f){ for (let i = 0; i < n; i++) B.parts.push(f(i)); }
+function stepParts(B, dt, t){
+  const f = B.fc;
+  B.parts = B.parts.filter(p => (t - p.born) / 1000 < p.life);
+  for (const p of B.parts) {
+    const age = (t - p.born) / 1000 / p.life;
+    p.x += p.vx * dt * 60; p.y += p.vy * dt * 60; p.vx *= p.drag; p.vy = p.vy * p.drag + (p.g || 0) * dt * 60;
+    // 사라질 때는 투명해지지 않고 깜빡이며 성겨진다
+    if (age > .55 && hash(p.x | 0, (t / 50) | 0) < (age - .55) * 2.2) continue;
+    if (p.kind === 'cres') { const s = cres(p.r, ((Math.round(p.a + age * p.spin) % 8) + 8) % 8, p.col); f.drawImage(s, Math.round(p.x - s.width / 2), Math.round(p.y - s.height / 2)); }
+    else if (p.kind === 'streak') {
+      const L = p.len * (1 - age * .5), n = Math.hypot(p.vx, p.vy) || 1;
+      f.fillStyle = p.col;
+      for (let i = 0; i < L; i++) f.fillRect(Math.round(p.x - p.vx / n * i), Math.round(p.y - p.vy / n * i), 1, 1);
+    } else { f.fillStyle = p.col; f.fillRect(Math.round(p.x), Math.round(p.y), 1, 1); }
+  }
+}
+// 탄도: 흰 심, 옅은 푸른 테, 바깥으로 성겨지는 푸른 번짐
+function beam(f, x, y0, y1, w, t){
+  if (y1 - y0 < 1) return;
+  const sh = (t / 70) | 0;
+  for (let d = w + 1; d >= 2; d--) {
+    const dens = (1 - (d - 1) / (w + 1.5)) * .95;
+    f.fillStyle = d < 4 ? BLUE[2] : BLUE[1];
+    for (let y = y0; y < y1; y++) { if (dens > bay(x + d, y + sh)) f.fillRect(x + d, y, 1, 1); if (dens > bay(x - d, y + sh + 2)) f.fillRect(x - d, y, 1, 1); }
+  }
+  f.fillStyle = BLUE[3]; f.fillRect(x - 1, y0, 1, y1 - y0); f.fillRect(x + 1, y0, 1, y1 - y0);
+  f.fillStyle = BLUE[4]; f.fillRect(x, y0, 1, y1 - y0);
+}
+function star4(f, x, y, L, col){ f.fillStyle = col; f.fillRect(x - L, y, L * 2 + 1, 1); f.fillRect(x, y - L, 1, L * 2 + 1); f.fillRect(x - 1, y - 1, 3, 3); }
+// 수평으로 번지는 빛 (탄도의 밑동)
+function hflare(f, x, y, L, k){
+  for (let i = -L; i <= L; i++) { const v = (1 - Math.abs(i) / (L + 1)) * (1 - k); if (v > bay(x + i, y)) { f.fillStyle = Math.abs(i) < L * .3 ? BLUE[4] : BLUE[2]; f.fillRect(x + i, y, 1, 1); } }
+}
+// 열린 틈의 반폭: 탄도 밑동에서는 좁고, 위로 갈수록 넓어진다
+function openHW(B, y, t){
+  const P = B.plan, oy = P.from[1];
+  if (!B.breakAt || t < B.breakAt) {                       // 쏜 직후: 탄도를 따라 가는 틈
+    const head = B.head; if (y < head || y > oy + 2) return 0;
+    return 1.5 + (B.pierceAt && t >= B.pierceAt ? 1.5 : 0) + Math.sin(y * .7 + t / 40) * .5;
+  }
+  const k = (t - B.breakAt) / 1000, p = easeOut(k / 1.15);
+  const up = Math.max(0, (oy - y) / oy);
+  let hw = 3 + p * (SW * .04 + SW * .58 * Math.pow(up, 1.25));
+  if (y > oy) { hw = (3 + p * SW * .05) * Math.max(0, 1 - (y - oy) / 14); if (hw < 1) return 0; }
+  return hw + Math.sin(y * .19 + k * 8) * 1.6 * p;
+}
+function composeSky(B, t){
+  if (!B.px || B.px.w !== SW || B.px.h !== SH) {
+    const g = c => c.getContext('2d').getImageData(0, 0, SW, SH).data;
+    B.px = {w:SW, h:SH, night:g(base), white:g(getInvBase()), out:sx.createImageData(SW, SH)};
+  }
+  const {night, white, out} = B.px, d = out.data, bx = B.plan.from[0];
+  const q = B.breakAt && t > B.breakAt ? Math.max(0, ((t - B.breakAt) / 1000 - .7) / 1) : 0;   // 남은 백야가 틈에서부터 타들어 간다
+  for (let y = 0; y < SH; y++) {
+    const hw = openHW(B, y, t);
+    for (let x = 0; x < SW; x++) {
+      const i = (y * SW + x) * 4;
+      const dist = Math.abs(x - bx) - hw;
+      const open = dist < 0 || (q > 0 && dist < easeOut(q) * SW * 1.15 - 9 * bay(x, y) - 7 * hash(x, y));
+      const s = open ? night : white;
+      d[i] = s[i]; d[i + 1] = s[i + 1]; d[i + 2] = s[i + 2]; d[i + 3] = 255;
+    }
+  }
+  sx.putImageData(out, 0, 0);
+  return q;
 }
 function drawBullet(t){
-  const B = bulletFx, P = B.plan;
-  sx.imageSmoothingEnabled = false;
-  if (!B.shatterAt || t < B.shatterAt) {
-    sx.globalAlpha = 1; sx.drawImage(getInvBase(), 0, 0);
-    if (!B.shotAt || t < B.shotAt) { drawWhiteNight(t); return; }
-    const FLY = 1500, ms = t - B.shotAt, fly = Math.min(1, ms / FLY);
-    const bx = P.from[0] + (P.to[0] - P.from[0]) * fly, by = P.from[1] + (P.to[1] - P.from[1]) * fly;
-    burstFx(P.from[0], P.from[1], ms, 1);
-    if (fly < 1 && bulletSilver) {
-      const w = Math.round(bulletSilver.width * .55);
-      sx.save(); sx.translate(Math.round(bx), Math.round(by)); sx.rotate(P.rot); sx.drawImage(bulletSilver, -w / 2, -w / 2, w, w); sx.restore();
+  const B = bulletFx, P = B.plan, f = B.fc, ox = P.from[0], oy = P.from[1];
+  if (B.fx.width !== SW || B.fx.height !== SH) { B.fx.width = SW; B.fx.height = SH; }
+  const dt = Math.min(.05, (t - (B.lt || t)) / 1000); B.lt = t;
+  f.clearRect(0, 0, SW, SH);
+  // 탄도의 머리: 쏜 뒤 0.22초 만에 꼭짓점에 닿고, 갈라진 뒤에는 하늘 끝까지
+  if (B.shotAt && t >= B.shotAt) {
+    const s = (t - B.shotAt) / 1000;
+    B.head = Math.round(oy - (oy - P.ay) * easeOut(s / .22));
+    if (B.pierceAt && t >= B.pierceAt) B.head = Math.round(P.ay - P.ay * easeOut((t - B.pierceAt) / 160));
+  }
+  // 하늘: 쏘기 전엔 백야 그대로, 쏜 뒤로는 틈이 열린다
+  let q = 0;
+  if (B.shotAt && t >= B.shotAt) q = composeSky(B, t); else { sx.globalAlpha = 1; sx.drawImage(getInvBase(), 0, 0); }
+  // 열린 틈의 가장자리에 푸른 빛이 고인다
+  if (B.shotAt && t >= B.shotAt && q < .34) {
+    const sh = (t / 60) | 0;
+    for (let y = 0; y < SH; y++) {
+      const hw = openHW(B, y, t); if (hw < 1) continue;
+      for (const sg of [-1, 1]) {
+        const ex = Math.round(ox + sg * hw);
+        for (let d = 0; d < 6; d++) {
+          const v = (1 - d / 6) * .9 * Math.max(0, 1 - q * 3);
+          if (v > bay(ex + sg * d, y + sh)) { f.fillStyle = d < 1 ? BLUE[3] : d < 3 ? BLUE[2] : BLUE[1]; f.fillRect(ex + sg * d, y, 1, 1); }
+        }
+      }
     }
-    if (fly >= 1) burstFx(P.to[0], P.to[1], ms - FLY, 1.8);
-    return;
   }
-  // 세계가 깨진다: 백야가 조각나 떨어지고, 그 밑에서 밤이 드러난다
-  const k0 = (t - B.shatterAt) / 1000, k = Math.max(0, k0 - .18);   // 금이 간 채로 한 박자 멈췄다가 무너진다
-  for (const S of P.shards) {
-    const ox = S.vx * k * 42, oy = (S.vy * k + 2.4 * k * k) * 42, r = S.vr * k * 42;
-    sx.save(); sx.globalAlpha = Math.max(0, 1 - k / 1.1);
-    sx.translate(S.cx + ox, S.cy + oy); sx.rotate(r); sx.translate(-S.cx, -S.cy);
-    sx.beginPath(); S.poly.forEach((p, i) => i ? sx.lineTo(p[0], p[1]) : sx.moveTo(p[0], p[1])); sx.closePath();
-    sx.save(); sx.clip(); sx.drawImage(getInvBase(), 0, 0); sx.restore();
-    sx.strokeStyle = '#0E1530'; sx.lineWidth = 1; sx.stroke();
-    sx.restore();
+  // 금빛 쐐기: 내려오고 → 탄도와 맞서 떨고 → 세로로 갈라져 물러난다
+  {
+    const kIn = easeOut((t - B.start) / (reduced ? 200 : 1900));
+    let dy = Math.round(-(P.ay + 12) * (1 - kIn)), jx = 0;
+    if (B.shotAt && t >= B.shotAt && !(B.pierceAt && t >= B.pierceAt)) { jx = Math.round((hash(t | 0, 7) - .5) * 3); dy += Math.round((hash(t | 0, 9) - .5) * 2) - 1; }
+    if (!B.pierceAt || t < B.pierceAt) f.drawImage(P.cone, jx, dy);
+    else {
+      const k = (t - B.pierceAt) / 1000, sp = easeOut(k / 1.1) * SW * .7, lift = Math.round(-k * k * 30);
+      if (k < 1.3) for (const sg of [-1, 1]) {
+        f.save(); f.beginPath(); sg < 0 ? f.rect(0, 0, ox, SH) : f.rect(ox + 1, 0, SW, SH); f.clip();
+        f.globalAlpha = k < .5 ? 1 : k < .85 ? .66 : .33;
+        f.drawImage(P.cone, Math.round(sg * sp), lift); f.restore();
+      }
+      f.globalAlpha = 1;
+    }
   }
-  sx.globalAlpha = 1;
-}
-function crackOverlay(P){
-  const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg');
-  const W = SW * PX, H = SH * PX;
-  svg.setAttribute('class', 'cut'); svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('preserveAspectRatio', 'none'); svg.setAttribute('aria-hidden', 'true');
-  for (const r of P.rays) {
-    const ln = document.createElementNS(ns, 'line');
-    ln.setAttribute('x1', P.to[0] * PX); ln.setAttribute('y1', P.to[1] * PX); ln.setAttribute('x2', r.end[0] * PX); ln.setAttribute('y2', r.end[1] * PX);
-    ln.setAttribute('pathLength', '1'); ln.setAttribute('shape-rendering', 'crispEdges'); svg.append(ln);
+  if (!B.shotAt || t < B.shotAt) {
+    // 조커의 손: 백야 위의 짙은 별 하나
+    const on = Math.sin(t / 260) > 0;
+    star4(f, ox, oy, on ? 3 : 2, '#0E1530');
+  } else {
+    const s = (t - B.shotAt) / 1000;
+    const pierced = B.pierceAt && t >= B.pierceAt, broke = B.breakAt && t >= B.breakAt;
+    let w = pierced ? 5 : 1 + ((t / 55 | 0) % 3 === 0 ? 1 : 0);   // 맞서는 동안은 가늘게 떤다
+    if (broke) { const k = (t - B.breakAt) / 1000; w = Math.max(0, Math.round(6 - k * 3.4)); }
+    const fadeK = broke ? (t - B.breakAt) / 1000 : 0;
+    if (fadeK < 1.9) beam(f, ox, B.head, oy + 1, w, t);
+    // 총구: 퍼지는 점선 고리와 수평으로 번지는 빛
+    if (s < .5) { f.fillStyle = BLUE[3]; const r = Math.round(3 + s * 34); for (let a = 0; a < 6.28; a += 3 / r) f.fillRect(Math.round(ox + Math.cos(a) * r), Math.round(oy + Math.sin(a) * r * .5), 1, 1); }
+    if (s < .7) hflare(f, ox, oy, Math.round(easeOut(s / .25) * SW * .45), s / .7);
+    star4(f, ox, oy, 3 + (s < .15 ? 3 : 0), BLUE[4]);
+    // 맞닿은 꼭짓점: 불꽃이 튄다
+    if (!pierced && s > .2) {
+      star4(f, ox, P.ay + 1, 2 + ((t / 60 | 0) % 3), (t / 80 | 0) % 2 ? BLUE[4] : GOLD[4]);
+      spawn(B, 2, () => ({kind:'dot', x:ox + (Math.random() - .5) * 3, y:P.ay + 1, vx:(Math.random() - .5) * 3.2, vy:-Math.random() * 1.6 - .2, drag:.93, g:.06, life:.35 + Math.random() * .3, born:t, col:Math.random() < .6 ? GOLD[3] : BLUE[3]}));
+    }
+    if (broke) {
+      const k = (t - B.breakAt) / 1000;
+      if (k < .55) hflare(f, ox, oy, Math.round(easeOut(k / .3) * SW * .55), k / .55);
+      // 틈의 가장자리를 따라 위로, 바깥으로 흩어지는 빛줄기
+      if (k < 1.2) spawn(B, 3, () => {
+        const y = Math.random() * oy, sg = Math.random() < .5 ? -1 : 1, hw = openHW(B, y | 0, t);
+        const sp = 1.6 + Math.random() * 2.2;
+        return {kind:'streak', x:ox + sg * hw, y, vx:sg * sp, vy:-sp * (.6 + Math.random() * .5), drag:.97, life:.45 + Math.random() * .3, born:t, len:6 + Math.random() * 10, col:Math.random() < .5 ? BLUE[3] : BLUE[2]};
+      });
+    }
   }
-  screen.append(svg); return svg;
+  stepParts(B, dt, t);
 }
 function bulletSound(){
   const c = fxCtx(); if (!c) return; const t = c.currentTime;
   tone(c, t + 1.1, 2600, 1.8, .018, true);                                        // 백야의 이명
   burst(c, t + 2.9, .14, 900, .7, .6); tone(c, t + 2.9, 70, .4, .5);           // 총성
+  tone(c, t + 3.1, 1800, 1.3, .02, true); tone(c, t + 3.12, 1830, 1.3, .015, true); // 맞선 꼭짓점의 떨림
   for (let i = 0; i < 6; i++) burst(c, t + 4.95 + i * .06, .07, 3200 + i * 500, 3, .18); // 깨지는 소리
 }
 async function bulletBeat(g){
   const mon = document.querySelector('.monitor');
   choicesEl.innerHTML = '';
   const turn = el('button', 'turn', '조커의 차례'); turn.type = 'button'; turn.disabled = true; choicesEl.append(turn);
-  announce('조커의 차례. 마지막 탄환이 하얀 하늘을 꿰뚫고, 세계가 깨진다.');
+  announce('조커의 차례. 내려누르는 금빛을 향해 푸른 탄도 하나가 뻗고, 금빛이 갈라지며 백야가 열린다.');
   if (soundOn && master) { master.gain.setTargetAtTime(0, actx.currentTime, .15); bulletSound(); }
-  bulletFx = {plan: planShot(), shotAt: 0, shatterAt: 0};
-  const step = () => { if (reduced) draw(performance.now()); };
+  const fx = el('canvas', 'cut fxcv'); fx.setAttribute('aria-hidden', 'true'); fx.width = SW; fx.height = SH; screen.append(fx);
+  const now = () => performance.now();
+  bulletFx = {plan: planShot(), start: now(), shotAt: 0, pierceAt: 0, breakAt: 0, head: 0, parts: [], fx, fc: fx.getContext('2d')};
+  const B = bulletFx;
+  if (!reduced) screen.classList.add('goldhot');
+  // ① 금빛이 하늘을 접어 누르며 내려온다
   await sleep(reduced ? 300 : 1900);
-  // 가짜 끝: 대화 상자까지 하얗게 덮인다
   screen.classList.add('whitehold');
-  await sleep(reduced ? 300 : 1000);
-  // 격발: 역경직, 반전, 흔들림. 탄환이 날아간다.
-  bulletFx.shotAt = performance.now() - (reduced ? 900 : 0); step();
+  await sleep(reduced ? 200 : 1000);
+  // ② 격발: 가는 푸른 탄도가 곧게 뻗어 꼭짓점과 맞선다
+  B.shotAt = now();
   if (!reduced) { mon.classList.add('hitflash'); await sleep(70); mon.classList.remove('hitflash'); mon.classList.add('hitshake'); setTimeout(() => mon.classList.remove('hitshake'), 360); }
-  await sleep(reduced ? 400 : 1570);
-  // 명중: 곧은 금이 화면 끝까지, 대화 상자 위로도 뻗는다
-  const svg = crackOverlay(bulletFx.plan); requestAnimationFrame(() => svg.classList.add('on'));
+  await sleep(reduced ? 500 : 1500);
+  // ③ 꿰뚫는다: 금빛이 세로로 갈라진다
+  B.pierceAt = now(); screen.classList.remove('goldhot');
+  spawn(B, reduced ? 0 : 34, i => { const sg = i % 2 ? 1 : -1; return {kind:'cres', x:B.plan.ax + sg * Math.random() * 4, y:Math.random() * B.plan.ay, vx:sg * (1 + Math.random() * 2.6), vy:-Math.random() * .8, drag:.97, g:.015, life:.9 + Math.random() * .6, born:now(), r:[2, 3, 4][i % 3], a:(Math.random() * 8) | 0, spin:(Math.random() - .5) * 10, col:Math.random() < .7 ? GOLD[3] : GOLD[4]}; });
   if (!reduced) { screen.classList.add('slice'); setTimeout(() => screen.classList.remove('slice'), 300); }
-  await sleep(reduced ? 300 : 520);
-  // 세계가 깨진다
-  bulletFx.shatterAt = performance.now() - (reduced ? 2000 : 0); step();
-  screen.classList.remove('whitehold'); svg.classList.add('fade');
+  await sleep(reduced ? 200 : 520);
+  // 백야가 탄도를 따라 열리고, 밑의 밤이 드러난다
+  B.breakAt = now();
+  screen.classList.remove('whitehold');
+  spawn(B, reduced ? 0 : 70, i => { const sg = i % 2 ? 1 : -1, y = Math.random() * B.plan.from[1]; return {kind:'cres', x:B.plan.ax + sg * (2 + Math.random() * 6), y, vx:sg * (1.2 + Math.random() * 3.4), vy:-(.4 + Math.random() * 1.6), drag:.975, life:1 + Math.random() * .8, born:now(), r:[2, 3, 4, 5][i % 4], a:(Math.random() * 8) | 0, spin:(Math.random() - .5) * 12, col:[BLUE[4], BLUE[3], BLUE[2]][i % 3]}; });
   $('tbClock').textContent = '00:00';
-  await sleep(reduced ? 900 : 1700);
-  svg.remove(); bulletFx = null; whiteNight = false; screen.classList.remove('brightsky'); choicesEl.innerHTML = '';
+  await sleep(reduced ? 900 : 2000);
+  fx.remove(); bulletFx = null; whiteNight = false; screen.classList.remove('brightsky', 'goldhot'); choicesEl.innerHTML = '';
   if (reduced) draw(performance.now());
   if (soundOn && master) master.gain.setTargetAtTime(.75, actx.currentTime, .8);
   await narr({x:'끝이다.'}, g);
