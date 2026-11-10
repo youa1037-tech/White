@@ -148,6 +148,12 @@ button:focus-visible{outline:2px dashed var(--frost);outline-offset:1px}
 .cut.on line{stroke-dashoffset:0;transition:stroke-dashoffset .22s linear}
 .cut.fade{opacity:0;transition:opacity .9s}
 .fxcv{image-rendering:pixelated}
+.songw{left:10px;top:10px;width:232px;z-index:15;outline:2px solid var(--paper)}
+.songw .content{padding:2px;background:var(--ink)}
+.songw .yt{width:224px;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;color:var(--paper)}
+.songw .yt iframe{display:block;width:224px;height:200px;border:0}
+.songw .yt .small{margin:0;padding:0 12px}
+.songw a.btn{text-decoration:none;display:inline-block}
 .choices button.turn{animation:turnpulse 1s steps(2) infinite}
 @keyframes turnpulse{50%{box-shadow:inset 0 0 0 2px #B44C66}}
 .choices button.turn{opacity:.55;cursor:default}
@@ -749,6 +755,7 @@ const SCRIPT4 = [
   {t:'neutral'},
   {t:'card', x:['11:04', '3월 20일 (월)', '귀향 열차']},
   {t:'date', x:'3월 20일 (월)'}, {t:'clock', x:'11:04'}, {t:'place', x:'귀향 열차'},
+  {t:'song'},
   {t:'cap', x:'[열차 바퀴 소리]'},
   {t:'narr', x:'창가 자리. 봄볕이 테이블 위에 비스듬히 내려앉는다.'},
   {t:'narr', x:'렌이 휴대전화를 확인한다.'},
@@ -1302,6 +1309,7 @@ async function run(nodes, g){
     else if (n.t === 'whiteout') { const w = el('div', 'whiteout'); screen.append(w); await sleep(reduced ? 300 : 1700); w.remove(); textEl.innerHTML = ''; }
     else if (n.t === 'neutral') { screen.classList.add('neutral'); document.querySelector('.tb-user').textContent = '재생 중'; snowOn = false; }
     else if (n.t === 'card') { await dateCard(n.x, g); }
+    else if (n.t === 'song') startSong();
     else if (n.t === 'openline') state.openLine = true;
     else if (n.t === 'final') { const b = line('ln-final'); const tok = newTok(); await typeText(b.appendChild(document.createTextNode('')), n.x, () => 110 * mul(), tok); endTok(tok); await waitNext(g); }
     else if (n.t === 'awaken') { startAwaken(); await sleep(reduced ? 600 : 5400); }
@@ -1381,6 +1389,7 @@ async function ending(g, kind){
 }
 async function begin(ch = 0, carry = false){
   const g = ++gen; curCh = ch; const C = CHAPTERS[ch];
+  stopSong();
   $('titlep').hidden = true; screen.classList.remove('ended', 'listening', 'goldhot', 'goldout', 'neutral'); clearInterval(clockTimer); awaken = null; bulletFx = null; whiteNight = false; dayGlow = false; screen.classList.remove('brightsky');
   document.querySelector('.tb-user').innerHTML = '<span class="tbl">관측자 </span>아케치 고로';
   textEl.innerHTML = ''; choicesEl.innerHTML = ''; closeAll();
@@ -1401,7 +1410,7 @@ async function begin(ch = 0, carry = false){
 }
 function showTitle(){
   gen++; if (typing) typing.skip = true;
-  mode = 'title'; waiter = null; choiceCtl = null; swallowCtl = null; setSkip(false);
+  mode = 'title'; waiter = null; choiceCtl = null; swallowCtl = null; setSkip(false); stopSong();
   nextBtn.hidden = true; choicesEl.innerHTML = ''; closeAll();
   resetState(); curCh = 0; snowOn = true;
   screen.classList.add('ended');
@@ -1497,7 +1506,7 @@ function toggleSound(){
     src.start(); lfo.start(); lfo2.start();
   }
   soundOn = !soundOn; actx.resume();
-  master.gain.setTargetAtTime(soundOn ? .75 : 0, actx.currentTime, soundOn ? .8 : .3);
+  master.gain.setTargetAtTime(soundOn && !songWin ? .75 : 0, actx.currentTime, soundOn ? .8 : .3);
 }
 
 /* ---------- 은하수가 흐르는 겨울 하늘 (1px = 화면 2px) ---------- */
@@ -1877,6 +1886,60 @@ async function bulletBeat(g){
   await narr({x:'끝이다.'}, g);
   textEl.innerHTML = '';
   if (g !== gen) return hang();
+}
+/* ---------- 진엔딩 노래: 유튜브 공식 플레이어로 재생 ----------
+   음원을 직접 담지 않고, 권리자가 올린 영상을 유튜브 플레이어로 띄운다.
+   플레이어는 숨기지 않는다(유튜브 약관: 최소 200×200). 퍼가기가 막혀 있으면 링크로 바뀐다. */
+const SONG = {id:'3pE3pDS365w'};
+let songWin = null, ytReady = null;
+function loadYT(){
+  if (ytReady) return ytReady;
+  ytReady = new Promise((res, rej) => {
+    if (window.YT && window.YT.Player) return res();
+    const prev = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => { if (prev) prev(); res(); };
+    const sc = document.createElement('script'); sc.src = 'https://www.youtube.com/iframe_api';
+    sc.onerror = () => { ytReady = null; rej(); };
+    document.head.append(sc);
+    setTimeout(() => { if (!(window.YT && window.YT.Player)) { ytReady = null; rej(); } }, 8000);
+  });
+  return ytReady;
+}
+function songLink(box, msg){
+  box.innerHTML = `<p class="small">${msg}</p><a class="btn" href="https://youtu.be/${SONG.id}" target="_blank" rel="noopener">유튜브에서 듣기</a>`;
+}
+function startSong(){
+  stopSong();
+  const w = el('section', 'win active songw'); w.setAttribute('aria-label', '노래 재생');
+  w.innerHTML = '<header class="bar"><span class="ttl">♪ 재생 중</span><button class="x" type="button" aria-label="닫고 노래 멈추기">×</button></header>' +
+    '<div class="content"><div class="yt"><div id="ytSlot"></div></div></div>';
+  screen.append(w); songWin = w; w.style.zIndex = ++Z; fitSong();
+  w.querySelector('.x').addEventListener('click', () => { stopSong(); textEl.focus({preventScroll:true}); });
+  if (soundOn && master) master.gain.setTargetAtTime(0, actx.currentTime, .8);   // 바람 소리는 물러난다
+  const box = w.querySelector('.yt');
+  loadYT().then(() => {
+    if (songWin !== w) return;
+    w.player = new YT.Player('ytSlot', {width:224, height:200, videoId:SONG.id,
+      playerVars:{autoplay:1, playsinline:1, rel:0},
+      events:{
+        onReady: e => { try { e.target.playVideo(); } catch (_) {} },
+        onError: () => { if (songWin !== w) return; try { w.player.destroy(); } catch (_) {} songLink(box, '이 영상은 여기서 재생할 수 없습니다.'); }
+      }});
+  }).catch(() => { if (songWin === w) songLink(box, '플레이어를 불러오지 못했습니다.'); });
+}
+// 좁은 화면에서는 노래 창 아래로 대화창이 내려간다 (창이 글을 가리지 않게)
+function fitSong(){
+  const d = document.querySelector('.dialog'); d.style.height = '';
+  if (!songWin) return;
+  const over = songWin.getBoundingClientRect().bottom + 8 - d.getBoundingClientRect().top;
+  if (over > 0) d.style.height = Math.max(200, d.getBoundingClientRect().height - over) + 'px';
+}
+addEventListener('resize', () => { if (songWin) fitSong(); });
+function stopSong(){
+  if (!songWin) return;
+  try { songWin.player && songWin.player.destroy(); } catch (_) {}
+  songWin.remove(); songWin = null; fitSong();
+  if (soundOn && master) master.gain.setTargetAtTime(.75, actx.currentTime, .8);
 }
 /* 날짜 이동 (제작자 전용) */
 function devOn(){ try { return location.hash === '#dev' || localStorage.getItem('bwn.dev') === '1'; } catch (e) { return location.hash === '#dev'; } }
