@@ -154,6 +154,8 @@ button:focus-visible{outline:2px dashed var(--frost);outline-offset:1px}
 .songw .yt iframe{display:block;width:224px;height:200px;border:0}
 .songw .yt .small{margin:0;padding:0 12px}
 .songw a.btn{text-decoration:none;display:inline-block}
+.songw .lyr{margin:0;min-height:44px;width:224px;padding:6px 10px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--paper);border-top:2px solid var(--paper);line-height:1.5;word-break:keep-all;transition:opacity .3s}
+.songw .lyr.dim{opacity:0}
 .choices button.turn{animation:turnpulse 1s steps(2) infinite}
 @keyframes turnpulse{50%{box-shadow:inset 0 0 0 2px #B44C66}}
 .choices button.turn{opacity:.55;cursor:default}
@@ -1891,6 +1893,21 @@ async function bulletBeat(g){
    음원을 직접 담지 않고, 권리자가 올린 영상을 유튜브 플레이어로 띄운다.
    플레이어는 숨기지 않는다(유튜브 약관: 최소 200×200). 퍼가기가 막혀 있으면 링크로 바뀐다. */
 const SONG = {id:'pHsaIsUTHdc'};
+/* 가사 칸: 직접 채워 넣는 자리.
+   한 줄에 ['시각', '가사'] 하나씩, 시간 순서대로. 시각은 '분:초' 또는 초(숫자)로 쓴다.
+   그 시각이 되면 줄이 바뀌고, 다음 줄이 올 때까지 남아 있다. 가사를 지우고 싶은 자리에는 ['시각', '']을 넣는다.
+     예)  ['0:12', '첫째 줄'],
+          ['0:18.5', '둘째 줄'],
+          ['0:30', ''],
+   목록이 비어 있으면 가사 칸은 나타나지 않는다.
+   제작자 모드(#dev)에서는 창 제목에 재생 시각이 보이니, 그걸 보면서 시각을 맞추면 된다.
+   LYRIC_SHIFT: 전체 가사를 앞당기거나(-) 늦추는(+) 초. */
+const LYRICS = [
+];
+const LYRIC_SHIFT = 0;
+const lyrT = v => typeof v === 'number' ? v : String(v).split(':').reduce((a, x) => a * 60 + parseFloat(x || 0), 0);
+const LYR = LYRICS.map(([t, x]) => ({t: lyrT(t) + LYRIC_SHIFT, x})).sort((a, b) => a.t - b.t);
+const mmss = t => Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0');
 let songWin = null, ytReady = null;
 function loadYT(){
   if (ytReady) return ytReady;
@@ -1912,7 +1929,7 @@ function startSong(){
   stopSong();
   const w = el('section', 'win active songw'); w.setAttribute('aria-label', '노래 재생');
   w.innerHTML = '<header class="bar"><span class="ttl">♪ 재생 중</span><button class="x" type="button" aria-label="닫고 노래 멈추기">×</button></header>' +
-    '<div class="content"><div class="yt"><div id="ytSlot"></div></div></div>';
+    '<div class="content"><div class="yt"><div id="ytSlot"></div></div>' + (LYR.length ? '<p class="lyr" aria-hidden="true"></p>' : '') + '</div>';
   screen.append(w); songWin = w; w.style.zIndex = ++Z; fitSong();
   w.querySelector('.x').addEventListener('click', () => { stopSong(); textEl.focus({preventScroll:true}); });
   if (soundOn && master) master.gain.setTargetAtTime(0, actx.currentTime, .8);   // 바람 소리는 물러난다
@@ -1922,10 +1939,27 @@ function startSong(){
     w.player = new YT.Player('ytSlot', {width:224, height:200, videoId:SONG.id,
       playerVars:{autoplay:1, playsinline:1, rel:0},
       events:{
-        onReady: e => { try { e.target.playVideo(); } catch (_) {} },
-        onError: () => { if (songWin !== w) return; try { w.player.destroy(); } catch (_) {} songLink(box, '이 영상은 여기서 재생할 수 없습니다.'); }
+        onReady: e => { try { e.target.playVideo(); } catch (_) {} syncLyrics(w); },
+        onError: () => { if (songWin !== w) return; clearInterval(w.lyrTimer); const l = w.querySelector('.lyr'); if (l) l.remove(); fitSong(); try { w.player.destroy(); } catch (_) {} songLink(box, '이 영상은 여기서 재생할 수 없습니다.'); }
       }});
-  }).catch(() => { if (songWin === w) songLink(box, '플레이어를 불러오지 못했습니다.'); });
+  }).catch(() => { if (songWin !== w) return; const l = w.querySelector('.lyr'); if (l) l.remove(); fitSong(); songLink(box, '플레이어를 불러오지 못했습니다.'); });
+}
+// 플레이어의 재생 시각을 따라 가사 줄을 바꾼다
+function syncLyrics(w){
+  const lyr = w.querySelector('.lyr'), ttl = w.querySelector('.ttl'), dev = devOn();
+  if (!lyr && !dev) return;
+  let cur = -1;
+  w.lyrTimer = setInterval(() => {
+    if (songWin !== w || !w.player || !w.player.getCurrentTime) return;
+    let t = 0; try { t = w.player.getCurrentTime() || 0; } catch (_) { return; }
+    if (dev) ttl.textContent = '♪ 재생 중 · ' + mmss(t);
+    if (!lyr) return;
+    let i = -1; for (let k = 0; k < LYR.length && LYR[k].t <= t; k++) i = k;
+    if (i === cur) return;
+    cur = i; const x = i < 0 ? '' : LYR[i].x;
+    lyr.classList.add('dim');
+    setTimeout(() => { if (songWin === w) { lyr.textContent = x; lyr.classList.toggle('dim', !x); } }, reduced ? 0 : 300);
+  }, 200);
 }
 // 좁은 화면에서는 노래 창 아래로 대화창이 내려간다 (창이 글을 가리지 않게)
 function fitSong(){
@@ -1937,6 +1971,7 @@ function fitSong(){
 addEventListener('resize', () => { if (songWin) fitSong(); });
 function stopSong(){
   if (!songWin) return;
+  clearInterval(songWin.lyrTimer);
   try { songWin.player && songWin.player.destroy(); } catch (_) {}
   songWin.remove(); songWin = null; fitSong();
   if (soundOn && master) master.gain.setTargetAtTime(.75, actx.currentTime, .8);
