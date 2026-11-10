@@ -159,9 +159,13 @@ button:focus-visible{outline:2px dashed var(--frost);outline-offset:1px}
 .screen .dialog{transition:background .8s,opacity .9s,visibility .9s}
 .screen.songmode .dialog{opacity:0;visibility:hidden}
 .lyrc{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;justify-content:center;padding:0 28px;z-index:4;pointer-events:none}
-.lyrc p{margin:0;max-width:26em;text-align:center;font:20px/34px var(--f-ui);letter-spacing:.06em;color:var(--star,#F2F4FF);word-break:keep-all;transition:opacity .45s}
-.lyrc p.dim{opacity:0}
-@media (max-width:520px){.lyrc{padding:0 18px}.lyrc p{font-size:16px;line-height:28px}}
+.lyr-viewport{position:relative;width:100%;max-width:28em;height:280px;max-height:100%;overflow:hidden;mask-image:linear-gradient(to bottom,transparent,#000 18%,#000 100%);-webkit-mask-image:linear-gradient(to bottom,transparent,#000 18%,#000 100%)}
+.lyr-track{position:absolute;top:0;left:0;right:0;transition:transform .85s cubic-bezier(.22,.61,.36,1);will-change:transform}
+.lyrc p{margin:0;padding:9px 0;text-align:center;font:20px/34px var(--f-ui);letter-spacing:.06em;color:var(--star,#F2F4FF);word-break:keep-all;opacity:0;visibility:hidden;transition:opacity .65s}
+.lyrc p.shown{visibility:visible;opacity:.48}
+.lyrc p.current{opacity:1}
+@media (max-width:520px){.lyrc{padding:0 18px}.lyr-viewport{height:240px}.lyrc p{font-size:16px;line-height:28px;padding:7px 0}}
+@media (prefers-reduced-motion:reduce){.lyr-track,.lyrc p{transition:none}}
 .choices button.turn{animation:turnpulse 1s steps(2) infinite}
 @keyframes turnpulse{50%{box-shadow:inset 0 0 0 2px #B44C66}}
 .choices button.turn{opacity:.55;cursor:default}
@@ -2355,7 +2359,7 @@ async function bulletBeat(g, joint){
 const SONG = {id:'pHsaIsUTHdc'};
 /* 가사 칸: 직접 채워 넣는 자리.
    한 줄에 ['시각', '가사'] 하나씩, 시간 순서대로. 시각은 '분:초' 또는 초(숫자)로 쓴다.
-   그 시각이 되면 줄이 바뀌고, 다음 줄이 올 때까지 남아 있다. 가사를 지우고 싶은 자리에는 ['시각', '']을 넣는다.
+   그 시각이 되면 새 줄이 나타나고 앞선 가사는 위로 밀려 올라간다. ['시각', '']은 이전 가사를 남긴 채 강조만 쉬는 간주다.
      예)  ['0:12', '첫째 줄'],
           ['0:18.5', '둘째 줄'],
           ['0:30', ''],
@@ -2488,7 +2492,14 @@ function enterSongMode(w){
   screen.classList.add('songmode');
   if (!LYR.length) return;
   const c = el('div', 'lyrc'); c.setAttribute('aria-hidden', 'true');
-  c.append(el('p', 'dim')); screen.append(c); w.lyrEl = c; placeLyrics();
+  const viewport = el('div', 'lyr-viewport'), track = el('div', 'lyr-track');
+  w.lyrRows = LYR.flatMap((cue, index) => {
+    if (!cue.x) return [];
+    const p = el('p', '', cue.x); track.append(p); return [{index, p}];
+  });
+  viewport.append(track); c.append(viewport); screen.append(c);
+  w.lyrEl = c; w.lyrTrack = track; w.lyrViewport = viewport; placeLyrics();
+  if (document.fonts) document.fonts.ready.then(() => { if (songWin === w) placeLyrics(); });
 }
 function exitSongMode(){
   screen.classList.remove('songmode');
@@ -2502,23 +2513,39 @@ function placeLyrics(){
   const bottom = sr.bottom - tb.top;
   const narrow = sr.width - (wr.right - sr.left) < 300;
   c.style.top = (narrow ? wr.bottom - sr.top + 12 : 0) + 'px'; c.style.bottom = bottom + 'px';
+  positionLyrics(songWin, true);
 }
-// 플레이어의 재생 시각을 따라 가사 줄을 바꾼다
+// 현재 줄을 아래쪽에 놓아, 앞선 줄들이 부드럽게 위로 올라가게 한다.
+function positionLyrics(w, instant = false){
+  if (!w || !w.lyrTrack || !w.lyrActive) return;
+  const p = w.lyrActive, height = w.lyrViewport.clientHeight;
+  const anchor = Math.max(p.offsetHeight / 2, Math.min(height * .7, height - p.offsetHeight / 2));
+  w.lyrTrack.style.transition = instant || reduced ? 'none' : '';
+  w.lyrTrack.style.transform = `translateY(${anchor - p.offsetTop - p.offsetHeight / 2}px)`;
+}
+// 간주에도 앞선 가사를 남기며, 탐색한 위치에 맞춰 표시 이력을 복원한다.
 function syncLyrics(w){
   const ttl = w.querySelector('.ttl'), dev = devOn();
-  const p = w.lyrEl && w.lyrEl.querySelector('p');
-  if (!p && !dev) return;
-  let cur = -1;
+  const rows = w.lyrRows;
+  if (!rows && !dev) return;
+  let cur = -2, lastTime = null;
   w.lyrTimer = setInterval(() => {
     if (songWin !== w || !w.player || !w.player.getCurrentTime) return;
     let t = 0; try { t = w.player.getCurrentTime() || 0; } catch (_) { return; }
     if (dev) ttl.textContent = '♪ 재생 중 · ' + mmss(t);
-    if (!p) return;
+    if (!rows) return;
+    const jumped = lastTime === null || t < lastTime || Math.abs(t - lastTime) > 2;
+    lastTime = t;
     let i = -1; for (let k = 0; k < LYR.length && LYR[k].t <= t; k++) i = k;
     if (i === cur) return;
-    cur = i; const x = i < 0 ? '' : LYR[i].x;
-    p.classList.add('dim');
-    setTimeout(() => { if (songWin === w) { p.textContent = x; p.classList.toggle('dim', !x); } }, reduced ? 0 : 450);
+    const firstLine = !w.lyrActive;
+    cur = i; w.lyrActive = null;
+    rows.forEach(({index, p}) => {
+      p.classList.toggle('shown', index <= i);
+      p.classList.toggle('current', index === i);
+      if (index <= i) w.lyrActive = p;
+    });
+    positionLyrics(w, jumped || firstLine);
   }, 200);
 }
 // 좁은 화면에서 링크 창이 남아 있을 때는 대화창이 그 아래로 내려간다 (창이 글을 가리지 않게)
