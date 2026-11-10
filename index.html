@@ -155,6 +155,7 @@ button:focus-visible{outline:2px dashed var(--frost);outline-offset:1px}
 .songw .yt iframe{display:block;width:200px;height:200px;border:0}
 .songw .yt .small{margin:0;padding:0 12px}
 .songw a.btn{text-decoration:none;display:inline-block}
+.songw .yt .ytplay{margin:8px 0 4px}
 .screen .dialog{transition:background .8s,opacity .9s,visibility .9s}
 .screen.songmode .dialog{opacity:0;visibility:hidden}
 .lyrc{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;justify-content:center;padding:0 28px;z-index:4;pointer-events:none}
@@ -170,6 +171,32 @@ button:focus-visible{outline:2px dashed var(--frost);outline-offset:1px}
 #tbTag{display:none}
 .icon[hidden]{display:none!important}
 .btn.jmp{display:block;width:100%;text-align:left;margin:0 0 6px}
+.tb-user.ren{color:#2F5F80}
+.ln-note.by-ren .tag{color:#2F5F80;background:#8EC8F2}
+.ln-heard{margin:0 0 6px;font:15px/24px var(--f-text);color:#F2C4CF}
+.ln-sealed{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 10px;margin:6px auto 12px}
+.sw-mark.inl{display:inline-block;margin:6px 0}
+.choices button.renpick{color:#8EC8F2;box-shadow:inset 0 0 0 1px #3570B4}
+.choices button.renpick:hover,.choices button.renpick:focus{background:#3570B4;color:var(--paper)}
+.choices button.renpick.both{box-shadow:inset 3px 0 0 #B44C66,inset -3px 0 0 #8EC8F2,inset 0 0 0 1px #3570B4}
+.ln-guide{font:13px/20px var(--f-ui);color:#E58CA2;margin:2px 0 8px}
+/* 선택지가 길어도 대화창 밖으로 넘치지 않게: 선택지 칸 안에서만 스크롤 */
+.choices{max-height:min(30svh,230px);overflow-y:auto;overscroll-behavior:contain;min-height:0}
+.magwin{position:absolute;z-index:55;top:6%;bottom:7%;left:50%;transform:translateX(-50%);width:min(92%,560px);display:flex;flex-direction:column;background:var(--ink);box-shadow:0 0 0 2px var(--paper),0 0 0 4px var(--ink),6px 6px 0 4px rgba(0,0,0,.45);padding:0 12px 10px}
+.magttl{flex:none;margin:0 -12px 10px;padding:4px 10px;font:13px/20px var(--f-ui);color:var(--ink);background:var(--paper)}
+.magtgt{flex:none;margin:0 0 8px;padding-left:8px;border-left:2px solid var(--gold);font:13px/20px var(--f-text);color:var(--gold)}
+.mag{flex:1 1 auto;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:4px;padding-right:2px}
+.mag button.magl{flex:none;display:block;width:100%;text-align:left;background:none;border:0;cursor:pointer;color:#AFC0D4;font:14px/21px var(--f-text);padding:6px 8px 6px 10px;box-shadow:inset 2px 0 0 #6B5A7A}
+.mag button.magl:hover,.mag button.magl:focus-visible{background:rgba(220,230,239,.12);color:var(--paper);outline:none}
+.mag button.magl.on{background:var(--paper);color:var(--ink);box-shadow:inset 3px 0 0 #E58CA2}
+.mag button.magl.hint{animation:maghint 1s steps(2) infinite}
+@keyframes maghint{50%{box-shadow:inset 0 0 0 2px #E58CA2}}
+.mag button.magl.spent{opacity:.35;text-decoration:line-through;cursor:default}
+.magctx{flex:none;font:12px/18px var(--f-ui);color:var(--frost);min-height:18px;margin:8px 0}
+.magctx.miss{color:#E58CA2}
+.magrow{flex:none;display:flex;gap:8px;flex-wrap:wrap;padding-top:8px;border-top:1px dashed rgba(220,230,239,.25)}
+.magrow .btn[disabled]{opacity:.45}
+@media (max-width:520px){.mag button.magl{font-size:13px;line-height:19px}.magtgt{font-size:12px;line-height:18px}.magwin{top:4%;bottom:5%}}
 .btn.snd{font:12px/18px var(--f-ui);padding:0 6px;margin-left:6px;vertical-align:1px}
 .entry .add{font:12px/18px var(--f-ui);color:var(--ink-soft);border-top:2px dotted var(--ink-soft);padding-top:4px;margin-top:6px}
 .ghost{color:var(--paper-dim);font:12px/18px var(--f-ui);margin:0 0 2px;transition:opacity .9s}
@@ -409,14 +436,14 @@ const MEANING = {
 /* ---------- 1장. 유예된 재대결의 증표 ---------- */
 Object.assign(OBS, {
   glove: { ch:1, label:'검은 무언가', chip:'장갑', fx:{clues:1, trust:5, erosion:-3},
-    body:'검은 가죽 장갑 한 짝이다. 손가락 마디마다 길들여진 주름이 깊게 잡혀 있고, 손목 쪽 가죽 표면은 한 군데가 거칠게 긁혀 하얗게 일어나 있다. 11월, 그 승부가 끝난 뒤 내가 던졌던 장갑이다. 버리지 않고 간직해 두었나. 그렇다면 그날의 승부는 아직 끝나지 않은 셈이다.',
-    alt:{when:'covered', body:'검은 가죽 장갑 한 짝이다. 손가락 마디마다 길들여진 주름이 깊게 잡혀 있고, 손목 쪽 가죽 표면은 한 군데가 거칠게 긁혀 하얗게 일어나 있다. 지난 11월, 그 승부가 끝난 뒤 내가 던졌던 장갑이다. ……그저 돌려줄 기회를 찾지 못했을 뿐이겠지.'},
+    body:'검은 가죽 장갑 한 짝이다. 손가락 마디마다 길들여진 주름이 깊게 잡혀 있고, 손목 쪽 가죽 표면은 한 군데가 거칠게 긁혀 하얗게 일어나 있다. 11월, 승부가 끝난 뒤 내가 던졌던 장갑이다. 버리지 않고 간직해 두었나……',
+    alt:{when:'covered', body:'검은 가죽 장갑 한 짝이다. 손가락 마디마다 길들여진 주름이 깊게 잡혀 있고, 손목 쪽 가죽 표면은 한 군데가 거칠게 긁혀 하얗게 일어나 있다. 11월, 그 승부가 끝난 뒤 내가 던졌던 장갑이다. ……그저 돌려줄 기회를 찾지 못했을 뿐이겠지.'},
     altFx:{clues:1, trust:5},
     ext:{when:'ren_hands', text:'저녁 내내 주머니 속에서 움켜쥐고 있던 것도 바로 이것이었나.'},
     link:{with:'ren_hands', msg:'관측 기록 갱신: 쥔 손 — 장갑'} },
   dart: { ch:1, label:'마지막 한 발', chip:'망설임', fx:{clues:1},
     body:'세 발의 다트 중 마지막 한 발만 숫자 링 바깥의 여백에 꽂혔다. 손을 떠나기 직전, 일정하던 렌의 손목 스냅이 한 번 뚝 멈추었다.',
-    alt:{when:'covered', body:'세 발의 다트 중 마지막 한 발만 숫자 링 바깥의 여백에 꽂혔다. 손을 떠나기 직전, 일정하던 렌의 손목 스냅이 한 번 뚝 멈추었다. 누적된 피로 탓이겠지. 오늘 같은 날이면 손끝도 무거울 테니까.'},
+    alt:{when:'covered', body:'세 발의 다트 중 마지막 한 발만 숫자 링 바깥의 여백에 꽂혔다. 손을 떠나기 직전, 일정하던 렌의 손목 스냅이 한 번 뚝 멈추었다. 누적된 피로가 원인일 터다. 오늘 같은 날이면 손끝도 무거울 테니까.'},
     addenda:{asked:'정해 놓은 건 있다고, 렌은 말했다.', again:'두 번째 판의 마지막 한 발은, 멈추지 않았다.'} },
   news: { ch:1, label:'뉴스 자막', chip:'매끄러움', fx:{clues:1, erosion:-5},
     body:'화면 하단의 자막이 동일한 문장을 기계적으로 되풀이한다. 「도내 사건·사고 신고 0건, 사흘째」. 홀 안의 누구도 TV를 향해 고개를 들지 않는다.',
@@ -446,18 +473,22 @@ const SCRIPT1 = [
   {t:'narr', x:'렌의 차례다. 처음 두 발은 고른 궤적을 그리며 20 언저리에 모인다.'},
   {t:'narr', x:'세 번째 다트를 쥔 렌의 손목이, 허공을 가르기 직전 짧게 멈칫한다.'},
   {t:'cap', x:'[옆 레인의 환호성]'},
+  {t:'narr', x:'옆 레인에서 진 쪽도 이긴 쪽과 똑같은 얼굴로 웃는다. 아쉬워하는 사람은 없다.'},
   {t:'narr', x:'손을 떠난 {dart}이 보드 가장자리, 숫자 링 바깥의 검은 여백에 박힌다. 같은 순간, 벽면 높이 걸린 TV 화면에서는 음소거된 {news}이 일정한 속도로 흘러간다.'},
   {t:'narr', x:'박힌 다트를 회수하러 보드 앞에 나란히 선다. 가까이서 마주한 렌의 옆얼굴에는 그늘이 그대로 남아 있다.'},
-  {t:'say', who:'아케치', x:'보물만 훔쳐 내면 이 연극도 끝이야. 루트까지 확보해 둔 마당에, 아직도 그 상태야?'},
+  {t:'say', who:'아케치', x:'보물만 훔쳐 내면 이 연극도 끝이야. 루트까지 확보해 둔 마당에, 아직도 그 모양이야?'},
   {t:'narr', x:'렌은 대답하는 대신 테이블로 돌아가 물잔을 집어 든다. 반쯤 녹아내린 {ice}이 유리잔 내벽에 부딪히며 작게 운다.'},
   {t:'cap', x:'[얼음이 잔에 부딪히는 소리]'},
+  {t:'say', who:'렌', x:'……오늘은 그냥 기분 전환하러 온 거야.'},
+  {t:'mark', id:'dart'},
+  {t:'round0'},
   {t:'say', who:'렌', x:'아케치, 너는…… 마루키의 현실이 정말로 싫은 거지?'},
   {t:'swallow', x:'너랑 이렇게 승부하는 시간까지 싫은 건 아니야.', reply:'당연한 걸 묻는군. 구역질이 나. ……너는? 설마 흔들리고 있는 건 아니겠지.'},
   {t:'narr', x:'렌은 입을 열지 않는다. 물기 어린 유리잔 바닥이 테이블 위에 내려앉는 둔탁한 소리만 남는다.'},
   {t:'choice', opts:[
     {label:'「……너는 어떻게 하고 싶은데?」', fx:{will:3, trust:4}, flag:'asked',
       then:[{t:'say', who:'렌', x:'정해 놓은 건 있어.'},
-            {t:'say', who:'아케치', x:'그런 표정으로 말해도 설득력 없는데.'},
+            {t:'say', who:'아케치', x:'그런 낯으로 말해도 설득력 없는데.'},
             {t:'say', who:'렌', x:'이 현실을 선택하겠다는 건 아니야.'},
             {t:'narr', x:'흔들리고 있는 것 같다.'}]},
     {label:'「지금 대답할 필요는 없어.」', fx:{trust:6}, flag:'waited1',
@@ -558,12 +589,16 @@ const SCRIPT2 = [
   {t:'say', who:'아케치', x:'상담교사는 엿듣는 사람까지 상담해 주나 보네요.'},
   {t:'say', who:'마루키', x:'두 사람 모두에게 하고 싶은 이야기였으니까.'},
   {t:'say', who:'마루키', x:'너희 관계는 참 신기해. 탐정과 괴도…… 적대 관계지만 증오하는 관계와는 또 다르지…….'},
+  {t:'say', who:'아케치', x:'분석은 커피라도 한 모금 드시고 하시죠. 내린 사람 성의를 봐서라도.'},
+  {t:'narr', x:'마루키는 웃기만 한다. 잔에는 여전히 손을 대지 않는다.'},
   {t:'say', who:'마루키', x:'그러다 보니 시도 팰리스의 일을 알게 됐을 땐…… 안타까웠어.'},
   {t:'say', who:'마루키', x:'아마미야…… 너는 후회하고 있던 거 아니야?'},
   {t:'say', who:'마루키', x:'서로 깊이 이해한 존재인 그를…… 아케치를 구하지 못했던 것을 말이야.'},
   {t:'say', who:'마루키', x:'그래서 나는 너희 관계가 회복되는 현실을 만들었어.'},
   {t:'say', who:'마루키', x:'이 현실이 끝나면, 오늘처럼 셋이 이 가게에 모일 수 있을지는…… 나도 장담하지 못해.'},
   {t:'narr', x:'살고 싶으면, 그의 현실을 받아들이라는 뜻이다. 내 삶을, 그가 정해 둔 모양대로.'},
+  {t:'mark', id:'palm'},
+  {t:'inner2'},
   {t:'hearsay'},
   {t:'query'},
   {t:'choice', opts:[
@@ -648,14 +683,16 @@ const SCRIPT3 = [
   {t:'cap', x:'[시계 초침 소리]'},
   {t:'narr', x:'렌은 카운터 의자에 앉은 채 말이 없다. 코트 {pocket}에 넣은 오른손이 움직이지 않는다. 카운터 위에는 마루키가 남긴 {cold_cup}이 그대로 놓여 있다.'},
   {t:'narr', x:'침묵이 길어진다.'},
-  {t:'if', cond:'flag:waited', then:[{t:'narr', x:'오다이바에서도 이 녀석은 먼저 입을 열지 않았다. 그때 나는 기다렸지만, 오늘은 기다릴 시간이 없다.'}]},
-  {t:'if', cond:'flag:pressed', then:[{t:'narr', x:'오다이바에서 재촉한 대답은 하얀 숨으로만 돌아왔다. 같은 실수를 두 번 할 생각은 없다.'}]},
-  {t:'lastq'},
+  {t:'if', cond:'flag:waited', then:[{t:'narr', x:'그곳에서도 이 녀석은 먼저 입을 열지 않았다. 기다릴 시간이 없다.'}]},
+  {t:'if', cond:'flag:pressed', then:[{t:'narr', x:'그때 재촉한 대답은 하얀 숨으로만 돌아왔다. 같은 실수를 두 번 할 생각은 없다.'}]},
+  {t:'mark', id:'notice'},
+  {t:'round1'},
+  {t:'constline'},
+  {t:'round2'},
   {t:'clock', x:'21:46'},
   {t:'narr', x:'내 목숨이, 렌을 붙잡는 패로 쓰였다. 무엇보다 그게 불쾌하다.'},
-  {t:'say', who:'아케치', x:'나는…… 내 길은 내가 정해.'},
+  {t:'swallow', x:'나를 위해서라는 말로, 내 뜻까지 없던 걸로 만들지 마.', reply:'나는…… 내 길은 내가 정해.'},
   {t:'say', who:'아케치', x:'누군가 만들어 놓은 현실에서 평생 갇혀 사는 건 거절하겠어.'},
-  {t:'fx', fx:{will:5}},
   {t:'if', cond:'flag:watched', then:[{t:'narr', x:'어젯밤 개찰구에서, 렌은 계단 앞에서 한 번 돌아봤었다. 그때 본 표정과 같다.'}]},
   {t:'if', cond:'flag:aheadGate', then:[{t:'narr', x:'어젯밤 나는 개찰구에서 돌아보지 않았다. 렌은 그 등을 끝까지 봤을 것이다.'}]},
   {t:'say', who:'렌', x:'정말 괜찮겠어?'},
@@ -673,8 +710,8 @@ const SCRIPT3 = [
   {t:'swallow', x:'나도 알아.'},
   {t:'swallow', x:'너와는 아직, 승부를 겨루고 싶었어.', keep:'아직'},
   {t:'narr', x:'완전히 지워진 자리에 금빛 문장이 스며 나온다.'},
-  {t:'eliza', gate:'GATE1'},
-  {t:'if', cond:'flag:gate1slashed', then:[
+  {t:'gate', n:1},
+  {t:'if', cond:'flag:gate1broken', then:[
     {t:'narr', x:'혀끝을 스치던 미지근한 타협을 이 악물고 씹어 삼킨다.'},
     {t:'narr', x:'다정하게 굴지 마. 내가 너를 어떤 눈으로 봐 왔는데. 기관실에서 내가 무엇을 걸고 격벽을 내렸는데!'},
     {t:'say', who:'아케치', x:'이따위 일이야!'},
@@ -684,46 +721,54 @@ const SCRIPT3 = [
     {t:'narr', x:'내가 원한 건 온실 속의 연명이 아니라, 너와 대등한 자리에서 마주 겨누는 총구였다.'},
     {t:'say', who:'아케치', x:'네가 망설이는 건…… 나에 대한 배반이야.'},
     {t:'narr', x:'내가 목숨을 걸고 살려 낸 ‘조커’를, 내 눈앞에서 죽이지 마라.'},
-    {t:'swallow', x:'적어도 너만은, 내가 고른 마지막을 모욕하지 마.'},
-    {t:'fx', fx:{will:5}}]},
+    {t:'swallow', x:'적어도 너만은, 내가 내린 결정을 모욕하지 마.'}]},
   {t:'clock', x:'22:06'},
+  {t:'gate', n:2},
+  {t:'if', cond:'flag:finalSilent', then:[{t:'narr', x:'끝내, 아무 말도 꺼내지 않는다.'}, {t:'runseq', x:'BAD2'}]},
   {t:'say', who:'아케치', x:'……여기서 확실히 묻겠어. 넌 어쩔 생각이지?'},
   {t:'say', who:'아케치', x:'……기다릴 생각은 없어. 바로 대답해.'},
   {t:'clock', x:'22:15'},
-  {t:'judge'}
+  {t:'if', cond:'flag:gate2broken', then:[{t:'runseq', x:'TRUE3'}]},
+  {t:'if', cond:'flag:gate2kept', then:[{t:'runseq', x:'ACCEPT3'}]}
 ];
 const TRUE3 = [
+  {t:'narr', x:'렌이 카운터 의자에서 일어난다. 의자 다리가 바닥을 긁는 소리가 짧다.'},
+  {t:'narr', x:'올려다보던 눈이 이제 같은 높이에 있다.'},
+  {t:'narr', x:'렌이 코트 주머니에서 손을 뺀다. 빈손이다. 쥐고 있던 것은 주머니 안에 그대로 두고.'},
   {t:'say', who:'렌', x:'마루키와 싸우자.'},
-  {t:'say', who:'아케치', x:'좋아. 안심했어.'},
-  {t:'say', who:'아케치', x:'나는 이 현실을 인정 못 해.'},
-  {t:'say', who:'아케치', x:'남의 손에 놀아나는 건 지긋지긋해.'},
+  {t:'narr', x:'살 수 있다는 건, 처음부터 이유가 되지 못했다. 그 남자의 손바닥 위에서라면.'},
   {t:'say', who:'아케치', x:'돌아가자. 우리들의 현실로.'},
   {t:'awaken'},
-  {t:'say', who:'아케치', x:'자기만족적 현실엔 살아갈 가치 따윈 없어.'},
-  {t:'say', who:'아케치', x:'반드시 이기겠어.'},
+  {t:'narr', x:'렌이 고개를 끄덕인다. 이번에도, 늦지 않게.'},
   {t:'swallow', x:'……이제 조금, 살아보고 싶어졌는데.', keep:'이제'},
   {t:'tag', x:'#04'},
   {t:'end', kind:'true'}
 ];
 const ACCEPT3 = [
+  {t:'narr', x:'렌이 한참 내 얼굴을 바라본다.'},
+  {t:'narr', x:'나는 시선을 피하지 않는다. 피하지 않으니까, 렌은 믿는다.'},
+  {t:'say', who:'렌', x:'……네가 괜찮다면, 나는 더 잃고 싶지 않아.'},
   {t:'say', who:'렌', x:'마루키의 현실 속에서 살아가자.'},
   {t:'say', who:'아케치', x:'진심으로 하는 소리야?'},
   {t:'say', who:'렌', x:'진심이야.'},
   {t:'say', who:'아케치', x:'……'},
-  {t:'eliza', gate:'GATE2'},
-  {t:'if', cond:'flag:gate2kept', then:[
-    {t:'goldout'},
-    {t:'wait'},
-    ...BAD_EPI,
-    {t:'end', kind:'bad1'}]}
+  {t:'say', who:'아케치', x:'그게 너의 대답인 건가.'},
+  {t:'say', who:'아케치', x:'그렇다면 나는 더 이상 아무 말도 하지 않겠어.'},
+  {t:'goldout'},
+  {t:'wait'},
+  ...BAD_EPI,
+  {t:'end', kind:'bad1'}
 ];
 const BAD2 = [
   {t:'narr', x:'렌은 더 말하지 않는다. 나도 더 묻지 않는다. 문 종이 한 번 울리고, 그걸로 밤이 끝난다.'},
   {t:'date', x:'2월 3일 (금)'}, {t:'place', x:'오다이바 · 밤'}, {t:'clockrun'},
   {t:'narr', x:'2월 3일. 약속한 시각이 지나도, 기다리는 발소리는 오지 않는다.'},
+  {t:'narr', x:'휴대폰이 한 번 울린다.'},
+  {t:'say', who:'렌', x:'미안. 네가 뭘 원하는지 끝까지 못 들었어.'},
+  {t:'swallow', x:'……기다리고 있어.'},
   {t:'narr', x:'마루키의 말대로라면, 이것도 하나의 대답이다.'},
   {t:'wait'},
-  BAD_EPI[0], {t:'narr', x:'그날 밤 무엇을 기다렸는지는, 이제 잘 기억나지 않는다.'},
+  BAD_EPI[0], {t:'narr', x:'그날 밤 무엇을 기다렸는지는 이제 잘 기억나지 않는다.'},
   ...BAD_EPI.slice(1),
   {t:'end', kind:'bad2'}
 ];
@@ -739,39 +784,122 @@ const RETRY3 = [
 /* ---------- 에필로그. 백야의 끝, 그리고 3월 20일 ---------- */
 Object.assign(OBS, {
   joker_hand: { ch:4, label:'조커의 손', chip:'멈추지 않는 손목', fx:{clues:1},
-    body:'와이어에 매달린 채로도, 겨눈 총구는 한 점에서 움직이지 않는다. 손끝이 흔들리지 않는다. 망설임은 어젯밤에 두고 왔다.',
+    body:'와이어에 매달린 채로도, 겨눈 총구는 한 점에서 움직이지 않는다. 손끝이 흔들리지 않는다.',
     flagExt:[{flag:'asked', text:'정해 놓은 건 있다던 손이 정한 대로 움직인다.'},
              {flag:'waited1', text:'「지금은」이 끝나고, 대답이 손끝에서 나온다.'},
              {flag:'again', text:'키치죠지의 두 번째 판, 정중앙에 꽂히던 다트처럼.'}],
     link:{with:'dart', msg:'관측 기록 갱신: 마지막 한 발 — 조커의 손'} }
 });
-Object.assign(MEANING, { joker_hand:'정한 대로 움직이는 손' });
+Object.assign(OBS, {
+  maruki_face: { ch:4, label:'마루키의 얼굴', chip:'동정의 민낯', fx:{},
+    body:'구원을 말하는 얼굴에 핏기가 없다. 자기 정의에 갇힌 것이겠지. 저런 자에게 내 결말을 위탁할 생각은 추호도 없다.' },
+  palm_now: { ch:4, label:'손바닥', chip:'나의 증명', fx:{},
+    body:'그립에 눌린 굳은살이 터져 피가 배어 나온다. 아릿하고 선명한 고통이다. 마루키가 지우려 했던, 내가 살아 있었다는 증거다.',
+    addenda:{painGrip:'검지에 박힌 통증으로 버텼다.', painLip:'혀끝의 피 맛으로 버텼다.'},
+    seeMsg:'관측 기록 고정: 「나」 — 이 기록은 어떤 현실에서도 삭제되지 않습니다.' },
+  joker_coat: { ch:4, label:'검은 코트 자락', chip:'공범자', fx:{},
+    body:'백야를 가르는 단 하나의 검은 획. 망설임으로 무거웠던 코트가 아니다. 그는 내 몫의 결말까지 짊어지고 날아오른다.',
+    ext:{when:'glove', text:'주머니 속의 장갑은 이제 무겁지 않을 것이다.'} }
+});
+Object.assign(OBS, {
+  r_pocket: { ch:4, by:'렌', label:'코트 주머니', chip:'남은 무게', fx:{},
+    body:'이제는 숨기듯 쥐고 있지 않아도 된다.' },
+  r_glove: { ch:4, by:'렌', label:'검은 가죽 장갑', chip:'미완의 약속', fx:{},
+    body:'손가락 마디마다 깊게 잡힌 주름. 손목 쪽에 하얗게 일어난 흠집. ……아직 승부가 끝나지 않았다는 뜻이다.' },
+  r_figure: { ch:4, by:'렌', label:'뒷모습', chip:'반 발짝', fx:{},
+    body:'얼굴은 보이지 않는다. 무리에서 반 발짝 떨어져 걷는 보폭만이, 누군가를 닮았다.' }
+});
+Object.assign(MEANING, { r_pocket:'숨기지 않아도 되는 손', r_glove:'아직 끝나지 않은 승부', r_figure:'배제할 근거가 없는 것' });
+Object.assign(MEANING, { joker_hand:'정한 대로 움직이는 손', maruki_face:'자기 정의에 갇힌 얼굴', palm_now:'지워지지 않는 기록', joker_coat:'결말을 함께 짊어진 사람' });
 const SCRIPT4 = [
   {t:'whitenight'},
-  {t:'cap', x:'[굉음]'},
-  {t:'narr', x:'거대한 주먹이 내려온다. 하늘을 통째로 접어 누르는 것 같은 무게다.'},
-  {t:'narr', x:'괴도단 전원이 한꺼번에 힘을 끌어올린다. 옆에서 버티는 녀석들의 숨소리가 거칠다.'},
-  {t:'say', who:'류지', x:'버텨! 여기서 밀리면 끝이야!'},
-  {t:'say', who:'안', x:'아직…… 아직 안 돼!'},
-  {t:'narr', x:'손목을 타고 충격이 올라온다. 다트보다 무겁고, 어젯밤 들고 있던 어떤 말보다도 무겁다.'},
-  {t:'narr', x:'그 틈에, 검은 코트 자락이 잔해를 밟고 위로 올라간다. 와이어 하나, 발판 하나.'},
-  {t:'narr', x:'올려다본 자리에서, {joker_hand}이 마루키를 겨눈다.'},
-  {t:'say', who:'아케치', x:'가, 조커! 끝내!'},
-  {t:'narr', x:'마지막 탄환.'},
-  {t:'bullet'},
+  {t:'clock', x:'23:59'},
+  {t:'cap', x:'[굉음] [무너져 내리는 금속성 마찰음]'},
+  {t:'narr', x:'하늘이 내려앉는다.'},
+  {t:'narr', x:'황금빛으로 주조된 거대한 손바닥이 시야 전체를 덮으며 시선 위에서 수직으로 떨어진다. 자비도, 악의도 없는 구원의 무게다.'},
+  {t:'say', who:'류지', x:'크윽……! 야, 다들 버텨! 여기서 밀리면 진짜 끝이라고!'},
+  {t:'say', who:'마코토', x:'발판이 무너지고 있어……! 조금만 더, 어떻게든 버텨야 해!'},
+  {t:'narr', x:'가드 레일을 쥔 팔뚝의 핏줄이 터질 듯이 부풀어 오른다. 뼈마디가 비명을 지른다.'},
+  {t:'narr', x:'숨을 들이마실 때마다 폐부 깊숙이 쇳내가 고인다. 오다이바의 바닷바람보다 차갑고, 르블랑의 커피보다 쓴 피 맛이다.'},
+  {t:'narr', x:'나는 한 손으로 검붉은 총신을 땅에 박아 몸을 지탱하며 고개를 쳐든다.'},
+  {t:'narr', x:'갈라진 금빛 손가락 틈새로 {maruki_face}이 내려다보고 있다.'},
+  {t:'cap', x:'[귓전을 울리는 이명] [다정한 목소리]'},
+  {t:'say', who:'마루키', x:'그만하자, 다들! 더 이상 아파할 필요 없어……!'},
+  {t:'say', who:'마루키', x:'아케치! 너도 알잖아. 이 대결이 끝나면, 너는 정말로——'},
+  {t:'goldline', x:'여기서 손만 놓으면, 아무도 다치지 않아.'},
+  {t:'narr', x:'{palm_now}의 감각이 옅어진다.'},
+  {t:'narr', x:'총자루를 쥐고 있는 손가락의 피부가 매끄럽게 메워지는 기분이다. 굳은살이 지워지고, 반동의 기억이 지워지고, 기관실의 격벽이 지워진다.'},
+  {t:'narr', x:'이 거대한 백야 속에서 나라는 존재의 모서리가 둥글게 마모되어 간다.'},
+  {t:'choice', opts:[
+    {label:'방아쇠에 건 검지에 힘을 준다.', flag:'painGrip',
+      then:[{t:'narr', x:'손톱 끝이 하얗게 질릴 만큼 그립을 고쳐 쥔다. 지워지려는 굳은살 위로 새로운 통증이 선명하게 박힌다.'}]},
+    {label:'입술 안쪽을 깨문다.', flag:'painLip',
+      then:[{t:'narr', x:'터져 나온 비릿한 열기가 혀끝을 적신다. 마루키가 만든 무균실의 공기가 단숨에 부서진다.'}]}
+  ]},
+  {t:'goldclear'},
+  {t:'swallow', x:'사라지는 건 무서워. 그래도.', keep:'그래도', reply:'……닥쳐.'},
+  {t:'say', who:'아케치', x:'내 목숨값은 내가 치러. 네가 멋대로 정산하지 마!'},
+  {t:'narr', x:'가면 너머에서 헤리워드가 몸을 일으킨다. 짓누르던 금빛 손가락 하나가 밀려 올라가고, 그 틈으로 총구가 들린다.'},
+  {t:'narr', x:'시야가 트인다.'},
+  {t:'narr', x:'짓눌린 폭풍의 한가운데서, 누군가 내가 버티고 있는 잔해를 밟고 허공으로 도약한다.'},
+  {t:'narr', x:'{joker_coat}이 백야를 가르며 검게 번진다. 와이어가 팽팽하게 당겨지는 마찰음이 고막을 찢는다.'},
+  {t:'narr', x:'조커다.'},
+  {t:'cap', x:'[모든 소리가 멎고, 심장 박동만 낮게]'},
+  {t:'narr', x:'공중에서 자세를 잡은 {joker_hand}이 마루키의 미간을 향한다.'},
+  {t:'narr', x:'그러나 마루키의 금빛 장벽이 총구 앞을 겹겹이 가로막는다. 조커 혼자서는 뚫을 수 없는 두께다.'},
+  {t:'narr', x:'렌의 손목이 허공에서 미세하게 떨린다.'},
+  {t:'narr', x:'이 한 발이 무엇을 끝낼지 아는 손.'},
+  {t:'swallow', x:'망설이지 마.'},
+  {t:'swallow', x:'이 결말은, 둘이서 내자.', keep:'둘이서'},
+  {t:'volley'},
+  {t:'narr', x:'내가 낸 균열의 한가운데로, 조커의 시선이 꽂힌다.'},
+  {t:'narr', x:'공중에서 마주친 눈동자에는 더 이상 어긋남도, 그늘도 없다.'},
+  {t:'together'},
+  {t:'cap', x:'[세상을 찢는 단 한 발의 총성]'},
+  {t:'narr', x:'조커의 손끝이 멈추지 않는다.'},
+  {t:'bullet', joint:true},
+  {t:'narr', x:'총구를 떠난 탄환이 내가 열어젖힌 균열을 꿰뚫고 들어가, 눈부신 백야를 수직으로 갈라놓는다.'},
+  {t:'narr', x:'하얀 하늘이 찢어지며 그 너머로 시리고 짙은 본래의 밤하늘이 쏟아져 내린다.'},
+  {t:'cap', x:'[멀어지는 무너짐 소리] [완벽한 정적]'},
+  {t:'narr', x:'손바닥이 뜨겁다.'},
+  {t:'narr', x:'화약 냄새가 코끝을 찌른다.'},
+  {t:'narr', x:'추락하는 렌의 시선이 허공에서 나를 찾는다.'},
+  {t:'narr', x:'나는 대답하는 대신, 연기가 피어오르는 총구를 내려놓고 입꼬리를 비틀어 웃어 보였다.'},
+  {t:'narr', x:'그걸로, 지금은 충분했다.'},
+  {t:'wait'},
   {t:'neutral'},
+  /* 3월 20일: 관측자가 아케치에서 렌으로 넘어간다. 아케치가 정말로 어떻게 되었는지는 끝까지 말하지 않는다. */
+  {t:'handover', phase:'out'},
   {t:'card', x:['11:04', '3월 20일 (월)', '귀향 열차']},
   {t:'date', x:'3월 20일 (월)'}, {t:'clock', x:'11:04'}, {t:'place', x:'귀향 열차'},
+  {t:'cap', x:'[천과 가죽이 스치는 소리]'},
+  {t:'handover', phase:'in'},
   {t:'cap', x:'[열차 바퀴 소리]'},
   {t:'narr', x:'창가 자리. 봄볕이 테이블 위에 비스듬히 내려앉는다.'},
-  {t:'narr', x:'렌이 휴대전화를 확인한다.'},
-  {t:'narr', x:'휴대전화를 내려놓은 손이, 코트 주머니로 간다.'},
-  {t:'narr', x:'검은 가죽 장갑 한 짝. 손가락 마디마다 깊은 주름, 손목 쪽에 하얗게 일어난 흠집.'},
-  {t:'narr', x:'렌은 그것을 한참 내려다본다. 아직 승부가 나지 않은 약속이다.'},
-  {t:'narr', x:'창밖으로, 교복 차림의 누군가가 정장 차림의 사람들과 함께 스쳐 지나간다. 얼굴은 보이지 않는다.'},
+  {t:'narr', x:'휴대전화가 몇 번 떨린다. 무사히 탔느냐는 안부, 다음 방학에 보자는 약속.'},
+  {t:'narr', x:'짧게 답장을 보내고, 휴대전화를 덮는다.'},
+  {t:'narr', x:'손이 {r_pocket}로 간다.'},
+  {t:'narr', x:'꺼낸 것은 {r_glove} 한 짝. 테이블 위에 올려놓는다.'},
+  {t:'inherit'},
+  {t:'narr', x:'흠집 위로 손끝을 포갠다.'},
+  {t:'heard'},
+  {t:'cap', x:'[출발을 알리는 안내 방송]'},
+  {t:'narr', x:'열차가 천천히 속도를 올린다.'},
+  {t:'narr', x:'장갑을 다시 집어 든다. 주머니에 넣기 직전, 시선이 창밖의 플랫폼으로 미끄러진다.'},
+  {t:'narr', x:'정장 차림의 사람들 틈으로, 교복 차림의 {r_figure} 하나가 스쳐 지나간다.'},
+  {t:'choice', opts:[
+    {label:'창유리에 손을 짚고 눈으로 쫓는다.', cls:'renpick',
+      then:[{t:'narr', x:'풍경이 빠르게 뒤로 밀려난다. 얼굴은 보이지 않는다.'}]},
+    {label:'안경을 고쳐 쓰고 똑바로 본다.', cls:'renpick',
+      then:[{t:'narr', x:'창유리에 비친 눈과 바깥의 그림자가, 한순간 겹친다.'}]}
+  ]},
+  {t:'narr', x:'환각일지도 모른다. 그래도, 배제할 근거는 없다.'},
   {t:'narr', x:'창유리에 비친 얼굴이 잠깐, 다른 누군가의 것처럼 보인다.'},
-  {t:'narr', x:'렌이 안경을 벗는다.'},
-  {t:'openline'},
+  {t:'narr', x:'안경을 벗어 접는다.'},
+  {t:'choice', opts:[{label:'장갑을 쥔다.', cls:'renpick both'}]},
+  {t:'solidline'},
+  {t:'narr', x:'가죽이 거칠다. 긁힌 흠집이 손바닥을 찌른다. 매끄럽지 않아서, 다행이다.'},
+  {t:'say', who:'렌', x:'……기다릴게. 다음 판은 내가 선공이야.'},
   {t:'final', x:'승부는, 아직 끝나지 않았다.'},
   {t:'end', kind:'fin'}
 ];
@@ -788,7 +916,7 @@ const CHAPTERS = [
 ];
 const chOf = id => OBS[id].ch || 0;
 const dayLabel = ch => (CHAPTERS[ch] && CHAPTERS[ch].label) || '';
-const POS = {palm:[.5, .3], ren_face:[.67, .14], ren_hands:[.79, .56], ren_eyes:[.6, .72],
+const POS = {r_pocket:[.8, .5], r_glove:[.86, .34], r_figure:[.62, .2], palm:[.5, .3], ren_face:[.67, .14], ren_hands:[.79, .56], ren_eyes:[.6, .72],
   glove:[.86, .34], dart:[.2, .18], ice:[.3, .52], news:[.12, .76],
   maruki_cup:[.38, .1], maruki_eyes:[.42, .44], ren_cloth:[.7, .38], notice:[.93, .6],
   pocket:[.84, .78], cold_cup:[.28, .3], joker_hand:[.55, .62]};
@@ -832,7 +960,7 @@ const QUESTIONS = {
     {t:'say', who:'아케치', x:'매끄러운 건, 누가 대패질을 했다는 뜻이야.'},
     {t:'narr', x:'렌이 식은 잔을 한 번 본다. 그리고 처음으로, 그 잔을 카운터 안쪽으로 치운다.'}]}
 };
-let hoverId = null;
+let hoverId = null, linkAnim = null;
 
 /* ---------- 상태 ---------- */
 const KEY = 'bwn.prologue';
@@ -932,12 +1060,14 @@ const line = (cls, who, me) => {
 };
 async function sys(x, err){ const b = line('ln-sys' + (err ? ' err' : '')); const tok = newTok(); await typeText(b.appendChild(document.createTextNode('')), x, SPD.sys, tok); endTok(tok); announce(x); }
 async function narr(n, g){
+  if (typeof lastLine !== 'undefined') lastLine = plainLine(n.x);
   const cls = n.cls === 'hyp' ? 'ln-n ln-hyp' : n.cls === 'last' ? 'ln-n ln-last' : 'ln-n';
   const b = line(cls);
   await typeRich(b, n.x, n.cls === 'last' ? (ch => (punct(ch) ? 220 : 60) * mul()) : SPD.narr);
   await waitNext(g);
 }
 async function say(who, x, g){
+  if (typeof lastLine !== 'undefined') lastLine = x;
   const me = who === '아케치';
   const b = line(me ? 'ln-me' : 'ln-o', who, me);
   await typeRich(b, '「' + x + '」', me ? SPD.me : SPD.other);
@@ -1009,7 +1139,7 @@ async function swallow(text, reply, g, keep){
   setSkip(false);
   await sleep(1200); if (g !== gen) return hang();
   await eraseLine(b, tn, text, keep, g);
-  state.swallowed.push(text); state.spoken.push(reply || ''); renderMinis();
+  pushCtx(); state.swallowed.push(text); state.spoken.push(reply || ''); renderMinis();
   if (reply) await say('아케치', reply, g);
 }
 async function eraseLine(b, tn, text, keep, g){
@@ -1070,6 +1200,318 @@ async function elizaGate(G, g){
     if (G.keepNarr) await narr({x:G.keepNarr}, g); else await waitNext(g);
   }
 }
+/* ---------- 관측 대조: 렌에게는 별로 묻고, 금빛에는 삼킨 말을 쏜다 ---------- */
+let lastLine = '';
+const plainLine = x => String(x).replace(/\{(\w+)\}/g, (m, id) => OBS[id] ? OBS[id].label : '');
+function pushCtx(){ (state.swCtx = state.swCtx || []).push({ch: curCh, after: lastLine}); }
+// 그 질문에 쓸 수 있는 보유 별만 띄운다
+async function pickStar(ids, prompt, g){
+  const have = ids.filter(id => state.observed.includes(id));
+  if (!have.length) return null;
+  await sys(prompt);
+  const i = await ask(have.map(id => ({label:`✦ ${OBS[id].label} · ${OBS[id].chip}`, cls:'starpick'})), g);
+  if (g !== gen) return hang();
+  const id = have[i]; flash = {id, t: performance.now()};
+  if (!(state.presented = state.presented || []).includes(id)) state.presented.push(id);
+  linkAnim = {id, t: performance.now()};
+  if (reduced) draw(performance.now());
+  return id;
+}
+const R1 = {
+  notice:{q:'예고장을 건넬 때는 싸울 생각이었잖아.', a:'……정한 건 그대로야. 다만 오늘, 하나 더 알게 된 게 있어서.'},
+  pocket:{q:'그걸 아직 쥐고 있는 이유는?', a:'……이건 아직 돌려주지 않을 거야.'},
+  cold_cup:{q:'그 남자가 남긴 말을 떠올리고 있어?', a:'……응. 그중 하나를 특히.'},
+  maruki_eyes:{q:'그 남자가 남긴 말을 떠올리고 있어?', a:'……응. 그중 하나를 특히.'},
+  _:{q:'……무슨 생각 해.', a:'정한 건 바뀌지 않았어. 그런데 쉽지가 않네.'}
+};
+// 1장: 처음 쓰는 질문 대조. 장갑은 내밀지 않는다 (끝내 묻지 않고 삼키는 장이다)
+const R0 = {
+  dart:{q:'기분 전환치고는 마지막 한 발에서 손목이 멈췄지.', a:'……보고 있었구나.'},
+  ice:{q:'기분 전환은 별로 안 된 모양이네. 아까부터 잔에도 손을 안 대고.', a:'……마실 타이밍을 놓쳤어.'},
+  news:{q:'저 뉴스 때문이야? 사흘째 0건이라던데.', a:'다들 좋아하더라. 나도…… 좋아해야 하는 걸까.'},
+  ren_face:{q:'오다이바에서부터 그런 표정이었어.', a:'……티 났어?'},
+  ren_eyes:{q:'오다이바에서부터 그런 표정이었어.', a:'……티 났어?'}
+};
+async function round0(g){
+  const id = await pickStar(['dart', 'ice', 'news', 'ren_face', 'ren_eyes'], '관측 대조 — 내밀 별을 고른다. 묻는 말이 바뀔 뿐, 틀린 답은 없다.', g);
+  if (!id) { await say('아케치', '……그래. 그럼 다행이고.', g); await narr({x:'렌은 웃지도 부정하지도 않는다.'}, g); return; }
+  await say('아케치', R0[id].q, g);
+  await say('렌', R0[id].a, g);
+}
+/* 2월 3일: 아케치가 삼킨 말로 금빛 장벽에 금을 내고, 조커와 함께 마지막 한 발을 쏜다 */
+const VOLLEY = {
+  '내가 어떻게 돌아왔는지, 너는 알고 있어?':'어떻게 돌아왔는지는 몰라도 상관없어! 지금 여기서 총을 쥐고 있는 건 나니까!',
+  '너랑 이렇게 승부하는 시간까지 싫은 건 아니야.':'다음 판은 없어, 조커! 아까 건 연습이었다는 변명도 오늘부로 끝이다!',
+  '그 장갑, 아직 가지고 있었군.':'그 장갑, 아직 버리지 마라!',
+  '당신은 아는 건가. 저 문 너머에서, 내게 무슨 일이 있었는지.':'무슨 일이 있었든, 지금의 나는 여기 있어!',
+  '그 말을 듣고도 싸우겠다는 건가.':'싸워! 그 말을 다 듣고서도!',
+  '혹시 나 때문에 그런 표정을 짓고 있는 거야?':'그런 표정은 이걸로 끝이야!',
+  '나를 위해서라는 말로, 내 뜻까지 없던 걸로 만들지 마.':'내 뜻은 내 거다! 누구의 구원으로도 지우게 두지 않아!',
+  '괜찮을 리가 없잖아.':'괜찮을 리가 없지! 그래도 쏜다!',
+  '나도 알아.':'알고 있어! 알고서 쏘는 거다!',
+  '너와는 아직, 승부를 겨루고 싶었어.':'승부는 내가 낸다, 내 손으로!',
+  '적어도 너만은, 내가 내린 결정을 모욕하지 마.':'이건 내가 내린 결정이다!',
+  '사라지는 건 무서워. 그래도.':'무서워! 그래도, 멈추지 않아!',
+  '망설이지 마.':'망설이지 마, 조커!',
+  '이 결말은, 둘이서 내자.':'둘이서 끝내자!'
+};
+const VOLLEY_NARR = [
+  '내 손에서 떠난 탄환이 금빛 장벽의 첫 번째 겹에 처박힌다. 금이 간다.',
+  '반동이 어깨뼈를 후려친다. 다트 따위와는 비교도 안 되는, 살아 있다는 확실한 통증이다.',
+  '마지막 탄환이 잠깐 검붉게 떨린다. 나는 삼킨 것들을 약실에 밀어 넣고 방아쇠를 당긴다.'
+];
+let goldLineEl = null;
+async function goldLine(x, g){
+  setCaption('[머릿속에서 되풀이되는 말]'); screen.classList.add('goldhot');
+  const p = el('p', 'ln ln-sw ln-gold'); const tn = p.appendChild(document.createTextNode('')); textEl.append(p); follow(true);
+  const tok = newTok(); await typeText(tn, x, () => 45, tok); endTok(tok);
+  goldLineEl = p; await waitNext(g);
+}
+function goldClear(){ screen.classList.remove('goldhot'); setCaption(''); if (goldLineEl) { goldLineEl.classList.add('fadeout'); goldLineEl = null; } }
+function pickLine(used, shot, g){
+  return new Promise(resolve => {
+    mode = 'busy'; choicesEl.innerHTML = '';
+    const box = el('div', 'magwin'); box.setAttribute('role', 'dialog'); box.setAttribute('aria-label', '탄창');
+    const ttl = el('div', 'magttl', `탄창 — ${shot + 1}발째`);
+    const tgt = el('p', 'magtgt', '「……쏘지 마, 조커.」');
+    const list = el('div', 'mag'), ctx = el('p', 'magctx', '쏠 말을 고른다. 틀린 말은 없다.'), row = el('div', 'magrow');
+    const fire = el('button', 'btn magfire', '쏜다'); fire.type = 'button'; fire.disabled = true;
+    let sel = -1;
+    const lines = state.swallowed.map((t, i) => {
+      const b = el('button', 'magl', t); b.type = 'button';
+      if (used.includes(i)) { b.disabled = true; b.classList.add('spent'); }
+      b.addEventListener('click', e => {
+        e.stopPropagation(); if (used.includes(i)) return; sel = i;
+        lines.forEach(x => x.classList.toggle('on', x === b));
+        const c = (state.swCtx || [])[i]; ctx.textContent = c ? `${dayLabel(c.ch)} · 「${plainLine(c.after)}」 다음에 지운 말` : '';
+        fire.disabled = false;
+      });
+      list.append(b); return b;
+    });
+    fire.addEventListener('click', e => { e.stopPropagation(); if (sel < 0) return; box.remove(); resolve(sel); });
+    row.append(fire);
+    box.append(ttl, tgt, list, ctx, row); box.addEventListener('click', e => e.stopPropagation());
+    screen.append(box); (lines.find(b => !b.disabled) || fire).focus({preventScroll:true});
+  });
+}
+async function volley(g){
+  await goldLine('……쏘지 마, 조커.', g);
+  await sys('관측 기록이 백야에 덮이고 있습니다. 봉인된 기록이 탄창에 장전됩니다.');
+  const gd = el('p', 'ln ln-guide', '조커의 앞을 가로막은 금빛 장벽을 향해, 삼켰던 말을 쏜다. 세 발.'); textEl.append(gd); follow(true);
+  const used = [], mon = document.querySelector('.monitor');
+  for (let shot = 0; shot < 3; shot++) {
+    if (!state.swallowed.length || used.length >= state.swallowed.length) break;
+    const i = await pickLine(used, shot, g); if (g !== gen) return hang();
+    used.push(i); const t = state.swallowed[i];
+    (state.fired = state.fired || []).includes(t) || state.fired.push(t);
+    await sys(shot === 2 ? '굉음' : '총성');
+    if (!reduced) { mon.classList.add('hitflash'); await sleep(60); mon.classList.remove('hitflash'); mon.classList.add('hitshake'); setTimeout(() => mon.classList.remove('hitshake'), 360); }
+    await narr({x:VOLLEY_NARR[shot]}, g);
+    if (t === '……이제 조금, 살아보고 싶어졌는데.') await narr({x:'……이제 조금, 살아보고 싶어졌다. 가장 숨기고 싶었던 진심이다.'}, g);
+    else {
+      const ck = constOfLine(t);
+      if (ck) {
+        await narr({x:`「${CONSTS[ck].name}」의 별들이 하늘에서 총구 쪽으로 한 줄로 늘어선다. 지금까지 관측한 것들이, 탄환을 민다.`}, g);
+      }
+      await say('아케치', (ck && CONST_LINES[ck].shout) || VOLLEY[t] || '이게 내 대답이다!', g);
+    }
+  }
+  goldClear();
+  await say('아케치', '가, 조커! 끝내!!', g);
+}
+async function together(g){
+  await sys('두 개의 조준점이 하나로 겹친다.');
+  await ask([{label:'쏜다 (함께)', cls:'slash'}], g);
+}
+
+/* 별자리 전용 삼킨 말: 그 회차에 완성한 별자리의 말만 하나씩 열린다 (보통 한 회차에 하나).
+   관문 2의 탄창과 에필로그 일제 사격에서 쏠 수 있다. 진엔딩 조건은 아니다. */
+const CONST_LINES = {
+  hand: {x:'장갑, 끝까지 쥐고 있어. 돌려받으러 갈 테니까.', keep:'돌려받으러', reply:'……주머니에 손 좀 넣고 있지 마. 보기 답답하니까.',
+         fire:'돌려받을 날까지 살아 있을 이유쯤은, 내가 정해.', shout:'그 장갑, 끝까지 쥐고 있어라!'},
+  beat: {x:'네가 늦는 건, 나를 기다려서였나.', keep:'기다려서', reply:'……느려. 오늘따라.',
+         fire:'이번엔 기다리지 마.', shout:'한 박자도 늦지 마, 조커!'},
+  seam: {x:'매끄러운 건 질색이야. 상처 난 쪽이 차라리 진짜 같으니까.', keep:'상처', reply:'……저 잔, 끝까지 안 치울 거야?',
+         fire:'흠 없는 현실보다, 금 간 쪽을 고르겠어.', shout:'이 매끄러운 하늘, 금 가게 해 주지!'}
+};
+const constOfLine = t => Object.keys(CONST_LINES).find(k => CONST_LINES[k].x === t);
+async function constLine(g){
+  for (const k of ['hand', 'beat', 'seam']) {
+    if (!constDone(k, state.observed)) continue;
+    const L = CONST_LINES[k];
+    await sys(`별자리 「${CONSTS[k].name}」 — 봉인된 기록이 하나 늘었습니다.`);
+    if (g !== gen) return hang();
+    await swallow(L.x, L.reply, g, L.keep);
+    if (g !== gen) return hang();
+  }
+}
+async function round1(g){
+  const id = await pickStar(['notice', 'pocket', 'cold_cup', 'maruki_eyes'], '관측 대조 — 내밀 별을 고른다.', g);
+  const R = R1[id] || R1._;
+  await say('아케치', R.q, g);
+  await say('렌', R.a, g);
+  if (id === 'pocket' && constDone('hand', state.observed)) await narr({x:'렌이 주머니에서 장갑을 꺼내 한참 내려다본다. 그리고 다시 넣는다. 쥐지 않고, 넣는다.'}, g);
+}
+async function round2(g){
+  const d1 = ['ren_face', 'ren_eyes', 'dart', 'ice'], d2 = ['ren_cloth', 'notice', 'cold_cup'];
+  const h1 = d1.some(id => state.observed.includes(id)), h2 = d2.some(id => state.observed.includes(id));
+  if (h1) await pickStar(d1, '관측 대조 — 어제의 별을 고른다.', g);
+  if (h2) await pickStar(d2, '관측 대조 — 오늘의 별을 고른다.', g);
+  await narr({x: h1 && h2 ? '어제는 그 표정을 읽지 못했지만, 지금 내 앞에서 말을 멈추는 이유는…… 조금 알 것 같다.'
+    : h1 ? '렌은 내 쪽을 보다가, 말을 멈춘다. 어제와 같다.'
+    : h2 ? '어제도 저런 얼굴이었지만, 그땐 읽지 못했다.' : '말을 멈춘 렌의 얼굴을 본다.'}, g);
+  // 프롤로그에서 삼킨 질문이 같은 모습으로 다시 써진다
+  const text = '혹시 나 때문에 그런 표정을 짓고 있는 거야?';
+  const b = line('ln-sw'); const tn = b.appendChild(document.createTextNode('')); const caret = el('span', 'caret'); b.append(caret);
+  const tok = newTok(); await typeText(tn, text, SPD.swallow, tok); endTok(tok);
+  await sleep(1200); if (g !== gen) return hang();
+  const i = await ask([{label:'말을 삼킨다'}, {label:'말한다'}], g);
+  if (i === 1) {
+    caret.remove(); tn.data = '「' + text + '」';
+    const pp = b.parentElement; pp.className = 'ln ln-me'; pp.prepend(el('span', 'who', '아케치'));
+    state.spokeLast = true; lastLine = text;
+    await waitNext(g);
+    if (constDone('beat', state.observed)) await narr({x:'렌이 처음으로 대답하기 전에 망설이지 않는다.'}, g);
+    await say('렌', '그걸 듣고도 아무렇지 않을 수는 없잖아.', g);
+    await say('아케치', '……쓸데없는 걱정이군.', g);
+    await say('렌', '알아. 그래도 걱정돼.', g);
+  } else {
+    await eraseLine(b, tn, text, null, g);
+    pushCtx(); state.swallowed.push(text); state.spoken.push('');
+    await narr({x:'렌은 재촉하지 않는다.'}, g);
+  }
+}
+// 2장: 마루키의 제안을 자기 별로 재 본다 (한 번만, 실패 없음)
+const INNER2 = {
+  palm:'그 남자의 팰리스에서 방아쇠를 당겼던 손이다. 대답은 이미 했다.',
+  news:'이 숫자로 누군가는 안심하겠지. 그렇다고 내가 이 현실을 받아들였다는 뜻은 아니다.',
+  maruki_eyes:'처음부터 내가 듣는 걸 알고 한 말이다. 렌을 설득하는 과정에 내 삶을 인질로 잡고 있다.'
+};
+async function inner2(g){
+  const id = await pickStar(['palm', 'news', 'maruki_eyes'], '관측 대조 — 그 제안 앞에 별 하나를 놓아 본다.', g);
+  if (id) await narr({x:INNER2[id]}, g);
+  await narr({x:'살 수 있다는 말과, 그렇게 살겠다는 말은 다르다.'}, g);
+}
+// 금빛 관문: 1은 숨은 손짓으로, 2는 버튼과 안내로 탄창을 연다
+const GOLD_LINE = {1:'……네 뜻대로 해. 나는 거기에 따를게.', h:'……말했잖아. 정하는 건 네 몫이야. 네 뜻대로 해.', 2:'……나는 아무렇지도 않아. 내 뜻은 신경 쓰지 말고, 네가 정해.'};
+const FIRE = {
+  1:{'나를 위해서라는 말로, 내 뜻까지 없던 걸로 만들지 마.':[]},
+  2:{'괜찮을 리가 없잖아.':['……그렇다고 내 대답이 달라지지는 않아.'],
+     '너와는 아직, 승부를 겨루고 싶었어.':['그걸 위해 그 남자 뜻대로 살아갈 생각은 없어.'],
+     '적어도 너만은, 내가 내린 결정을 모욕하지 마.':['……내 대답은, 이제 들었잖아.']}
+};
+for (const k in CONST_LINES) FIRE[2][CONST_LINES[k].x] = [CONST_LINES[k].fire];
+function gateChoice(p, two, g){
+  let lp = 0, late = 0;
+  return new Promise(resolve => {
+    gateCtl = () => { if (!gateCtl) return; gateCtl = null; clearTimeout(lp); clearTimeout(late); choicesEl.innerHTML = ''; mode = 'busy'; choiceCtl = null; resolve('open'); };
+    const opts = [{label:'그대로 둔다', gold:true}].concat(two ? [{label:'⌫ 지운다', cls:'slash'}] : []);
+    ask(opts, g).then(i => { gateCtl = null; clearTimeout(lp); clearTimeout(late); resolve(i === 1 ? 'open' : 'keep'); });
+    if (!two) {
+      const slot = el('button', 'ghostslot', '⌫'); slot.type = 'button'; slot.setAttribute('aria-label', '지우기 (Backspace)'); slot.title = 'Backspace';
+      slot.addEventListener('pointerdown', e => { e.preventDefault(); gateCtl && gateCtl(); });
+      slot.addEventListener('click', e => { e.stopPropagation(); gateCtl && gateCtl(); });
+      // 터치 기기는 바로, PC는 잠시 망설일 시간을 준 뒤 희미하게 나타난다
+      if (coarse.matches) choicesEl.append(slot);
+      else late = setTimeout(() => { if (gateCtl && !choicesEl.contains(slot)) choicesEl.append(slot); }, reduced ? 1500 : 4000);
+    }
+    p.onpointerdown = () => { clearTimeout(lp); lp = setTimeout(() => gateCtl && gateCtl(), 350); };
+    p.onpointerup = p.onpointerleave = p.onpointercancel = () => clearTimeout(lp);
+  });
+}
+// 탄창은 대화 상자 밖, 화면 위에 따로 뜬다 (모바일에서도 버튼이 잘리지 않게)
+function magazine(n, st, g){
+  return new Promise(resolve => {
+    mode = 'busy'; choicesEl.innerHTML = '';
+    const ok = FIRE[n], box = el('div', 'magwin'); box.setAttribute('role', 'dialog'); box.setAttribute('aria-label', '탄창');
+    const ttl = el('div', 'magttl', '탄창 — 삼켰던 말');
+    const tgt = el('p', 'magtgt', '「' + st.text + '」');
+    const list = el('div', 'mag'), ctx = el('p', 'magctx', '쏠 말을 고른다.'), row = el('div', 'magrow');
+    const fire = el('button', 'btn magfire', '쏜다'); fire.type = 'button'; fire.disabled = true;
+    const back = el('button', 'btn', '돌아가기'); back.type = 'button';
+    let sel = -1;
+    const said = saidLines();
+    const lines = state.swallowed.map((t, i) => {
+      const b = el('button', 'magl', t); b.type = 'button';
+      if (said.includes(t)) { b.disabled = true; b.classList.add('spent'); b.title = '이미 입 밖에 낸 말'; b.setAttribute('aria-label', t + ' (이미 꺼낸 말)'); }
+      else if (st.misses >= 2 && ok[t]) b.classList.add('hint');
+      b.addEventListener('click', e => {
+        e.stopPropagation(); if (b.disabled) return; sel = i; lines.forEach(x => x.classList.toggle('on', x === b));
+        const c = (state.swCtx || [])[i];
+        ctx.classList.remove('miss');
+        ctx.textContent = c ? `${dayLabel(c.ch)} · 「${plainLine(c.after)}」 다음에 지운 말` : '';
+        fire.disabled = false;
+      });
+      list.append(b); return b;
+    });
+    const done = r => { box.remove(); resolve(r); };
+    fire.addEventListener('click', e => {
+      e.stopPropagation(); if (sel < 0) return;
+      const t = state.swallowed[sel];
+      if (ok[t]) return done({fired:t});
+      st.misses++;
+      ctx.classList.add('miss'); ctx.textContent = '……아니. 지금 해야 할 말은, 그게 아니야.';
+      screen.classList.add('goldhot');
+      if (st.misses >= 2) lines.forEach(b => { if (!b.disabled && ok[b.textContent]) b.classList.add('hint'); });
+    });
+    back.addEventListener('click', e => { e.stopPropagation(); done('back'); });
+    row.append(fire, back);
+    if (n === 2) { const q = el('button', 'btn', '끝내 말하지 않는다'); q.type = 'button'; q.addEventListener('click', e => { e.stopPropagation(); done('silent'); }); row.append(q); }
+    box.append(ttl, tgt, list, ctx, row);
+    box.addEventListener('click', e => e.stopPropagation());
+    screen.append(box);
+    (lines.find(b => !b.disabled) || back).focus({preventScroll:true});
+  });
+}
+// 이미 입 밖에 낸 말: 관문에서 쏜 말, 3장에서 끝내 물어본 질문
+function saidLines(){
+  return (state.fired || []).concat(state.spokeLast ? ['혹시 나 때문에 그런 표정을 짓고 있는 거야?'] : []);
+}
+async function gateBeat(n, g){
+  const two = n === 2;
+  const text = two ? GOLD_LINE[2] : (state.handedOver ? GOLD_LINE.h : GOLD_LINE[1]);
+  setCaption('[머릿속에서 되풀이되는 말]'); screen.classList.add('goldhot');
+  const p = el('p', 'ln ln-sw ln-gold'); const tn = p.appendChild(document.createTextNode('')); const caret = el('span', 'caret'); p.append(caret);
+  textEl.append(p); follow(true);
+  const tok = newTok(); await typeText(tn, text, () => 45, tok); endTok(tok);
+  announce('금빛 문장: ' + text);
+  p.setAttribute('aria-describedby', 'gateHint');
+  if (two) {
+    caret.classList.add('wine'); p.classList.add('tremble');
+    if (!state.gate1broken) { const h = el('p', 'ln ln-guide', '이 문장은 지울 수 있다.'); p.after(h); }
+  }
+  const st = {misses:0, text};
+  for (;;) {
+    const act = await gateChoice(p, two, g);
+    if (g !== gen) return hang();
+    if (act === 'keep') {
+      caret.remove(); tn.data = '「' + text + '」';
+      p.className = 'ln ln-me goldsaid'; p.prepend(el('span', 'who', '아케치'));
+      screen.classList.remove('goldhot'); setCaption('');
+      state['gate' + n + 'kept'] = true; lastLine = text;
+      await waitNext(g);
+      return 'kept';
+    }
+    await sys('봉인된 기록을 임시로 엽니다.');
+    if (!state.magTold) { state.magTold = true; await sys('쏜 말은 입 밖으로 나갑니다. 렌에게 들린 말로 기록됩니다.'); }
+    const gd = el('p', 'ln ln-guide', '삼켰던 말로, 이 결론을 깨뜨린다.'); textEl.append(gd); follow(true);
+    const r = await magazine(n, st, g);
+    if (g !== gen) return hang();
+    if (r === 'back') continue;
+    screen.classList.remove('goldhot'); setCaption('');
+    if (r === 'silent') { state.finalSilent = true; return 'silent'; }
+    // 깨뜨린다: 금빛 문장에 금이 가고 흩어진 뒤, 그 말을 실제로 꺼낸다
+    p.classList.add('slashed'); caret.remove();
+    await sleep(reduced ? 0 : 800); p.classList.add('fadeout'); await sleep(reduced ? 0 : 450);
+    const mark = el('span', 'sw-mark wine'); mark.setAttribute('role', 'img'); mark.setAttribute('aria-label', '깨진 문장'); p.replaceWith(mark);
+    state['gate' + n + 'broken'] = true; (state.fired = state.fired || []).push(r.fired);
+    if (two && state.gate1kept) await say('아케치', '……아까 네 뜻대로 하라고 한 말, 취소하지.', g);
+    await say('아케치', r.fired, g);
+    for (const x of FIRE[n][r.fired]) await say('아케치', x, g);
+    return 'broken';
+  }
+}
+
 async function lastQuestion(g){
   const keys = ['hand', 'beat', 'seam'], obs = state.observed;
   const done = keys.filter(k => constDone(k, obs));
@@ -1157,7 +1599,7 @@ async function toggleObs(b){
   if (b._note) { b._note.remove(); b._note = null; b.setAttribute('aria-expanded', 'false'); return; }
   const note = el('div', 'ln-note'); note.id = 'note-' + id + '-' + Date.now();
   const body = el('div'); const tn = body.appendChild(document.createTextNode(''));
-  note.append(el('span', 'tag', '관찰 · ' + o.label), body);
+  note.append(el('span', 'tag', (o.by ? o.by + '의 관찰 · ' : '관찰 · ') + o.label), body); if (o.by) note.classList.add('by-ren');
   let anchor = p; while (anchor.nextElementSibling && anchor.nextElementSibling.classList.contains('ln-note')) anchor = anchor.nextElementSibling;
   anchor.after(note);
   b._note = note; b.setAttribute('aria-expanded', 'true'); b.setAttribute('aria-controls', note.id);
@@ -1183,6 +1625,7 @@ async function toggleObs(b){
   if (fresh && o.link && state.observed.includes(o.link.with)) {
     const sp = el('p', 'ln ln-sys', o.link.msg); note.after(sp);
   }
+  if (fresh && o.seeMsg) { const sp = el('p', 'ln ln-sys', o.seeMsg); note.after(sp); }
   note.scrollIntoView({block:'nearest'});
   announce(o.label + '. ' + text);
 }
@@ -1216,7 +1659,7 @@ function renderObsWin(){
           const o = OBS[id];
           // 처음 관찰문은 고치지 않고, 뒤에 알게 된 것만 추기로 덧붙인다
           const add = Object.entries(o.addenda || {}).filter(([f]) => src[f]).map(([, t]) => `<p class="add">추기 · ${esc(t)}</p>`).join('');
-          return `<div class="entry"><p><b>✦ ${esc(o.chip)}</b>${o.chip === o.label ? '' : ` <span class="faint">${esc(o.label)}</span>`}</p><p class="say">${esc(MEANING[id])}</p>${add}</div>`;
+          return `<div class="entry"><p><b>✦ ${esc(o.chip)}</b>${o.chip === o.label ? '' : ` <span class="faint">${esc(o.label)}</span>`}</p><p class="say">${esc(MEANING[id])}</p><p class="small">${(src.recognized || []).includes(id) ? '기록됨' : '직접 관찰함'}</p>${add}</div>`;
         }).join('')
       : '<p class="faint">켜진 별이 없습니다. 본문의 ✧ 표시를 누르면 바탕화면 하늘에 별이 켜집니다.</p>';
     const left = Object.keys(OBS).filter(id => chOf(id) === ch).length - ids.length;
@@ -1228,7 +1671,7 @@ function renderObsWin(){
   else {
   h += `<h4>말하지 않은 것 · ${spoken.length}건</h4>`;
   h += spoken.length
-    ? spoken.map((t, i) => `<div class="entry"><p><b>미발화 ${String(i + 1).padStart(2, '0')}</b> ${unlocked && sw[i] ? `<span class="unsealed">${esc(sw[i])}</span>` : '<span class="faint" aria-label="빈 줄">————————</span>'}</p><p class="small">이어서 한 말</p><p class="say">${t ? '「' + esc(t) + '」' : '— (발화 없음)'}</p>${i === 1 && src.spokeLast ? '<p class="add">3장에서 실제로 꺼낸 같은 질문 · 「혹시 나 때문에 그런 표정을 짓고 있는 거야?」</p>' : ''}</div>`).join('')
+    ? spoken.map((t, i) => `<div class="entry"><p><b>미발화 ${String(i + 1).padStart(2, '0')}</b> ${sw[i] && (unlocked || (src.fired || []).includes(sw[i])) ? `<span class="unsealed">${esc(sw[i])}</span>${(src.fired || []).includes(sw[i]) ? ' <span class="small">· 꺼낸 말</span>' : ''}` : '<span class="faint" aria-label="빈 줄">————————</span>'}</p><p class="small">이어서 한 말</p><p class="say">${t ? '「' + esc(t) + '」' : '— (발화 없음)'}</p>${i === 1 && src.spokeLast ? '<p class="add">3장에서 실제로 꺼낸 같은 질문 · 「혹시 나 때문에 그런 표정을 짓고 있는 거야?」</p>' : ''}</div>`).join('')
     : '<p class="faint">아직 없습니다.</p>';
   }
   const kept = (src.gate1kept ? 1 : 0) + (src.gate2kept ? 1 : 0);
@@ -1302,20 +1745,35 @@ async function run(nodes, g){
     else if (n.t === 'clock') $('tbClock').textContent = n.x;
     else if (n.t === 'date') $('tbDate').textContent = n.x;
     else if (n.t === 'clockrun') startClockRun();
+    else if (n.t === 'round0') await round0(g);
+    else if (n.t === 'goldline') await goldLine(n.x, g);
+    else if (n.t === 'goldclear') goldClear();
+    else if (n.t === 'volley') await volley(g);
+    else if (n.t === 'together') await together(g);
+    else if (n.t === 'round1') await round1(g);
+    else if (n.t === 'constline') await constLine(g);
+    else if (n.t === 'round2') await round2(g);
+    else if (n.t === 'inner2') await inner2(g);
+    else if (n.t === 'gate') await gateBeat(n.n, g);
+    else if (n.t === 'runseq') await run({TRUE3, ACCEPT3, BAD2}[n.x], g);
     else if (n.t === 'eliza') await elizaGate(n.gate === 'GATE2' ? GATE2 : GATE1, g);
     else if (n.t === 'lastq') await lastQuestion(g);
     else if (n.t === 'judge') await judge(g);
     else if (n.t === 'goldout') screen.classList.add('goldout');
-    else if (n.t === 'bullet') await bulletBeat(g);
+    else if (n.t === 'bullet') await bulletBeat(g, n.joint);
     else if (n.t === 'wait') await waitNext(g);
     else if (n.t === 'sysline') await sys(n.x);
     else if (n.t === 'dayglow') { clearInterval(clockTimer); dayGlow = true; screen.classList.add('brightsky'); state.starsGone = true; state.erased = true; screen.classList.remove('goldout'); document.querySelector('.tb-user').textContent = '아케치 고로'; snowOn = false; if (reduced) draw(performance.now()); }
     else if (n.t === 'fade') { const b = line('ln-sw'); const tok = newTok(); await typeText(b.appendChild(document.createTextNode('')), n.x, () => 90, tok); endTok(tok); await sleep(700); b.parentElement.classList.add('fadeout'); await sleep(700); b.parentElement.remove(); }
     else if (n.t === 'whitenight') { whiteNight = true; screen.classList.add('brightsky'); if (reduced) draw(performance.now()); }
     else if (n.t === 'whiteout') { const w = el('div', 'whiteout'); screen.append(w); await sleep(reduced ? 300 : 1700); w.remove(); textEl.innerHTML = ''; }
-    else if (n.t === 'neutral') { screen.classList.add('neutral'); document.querySelector('.tb-user').textContent = '재생 중'; snowOn = false; }
+    else if (n.t === 'neutral') { screen.classList.add('neutral'); snowOn = false; }
     else if (n.t === 'card') { await dateCard(n.x, g); }
     else if (n.t === 'openline') state.openLine = true;
+    else if (n.t === 'handover') await handover(n.phase, g);
+    else if (n.t === 'inherit') await inherit(g);
+    else if (n.t === 'heard') await heard(g);
+    else if (n.t === 'solidline') { state.solidLine = performance.now(); if (reduced) draw(performance.now()); await sleep(reduced ? 200 : 1300); }
     else if (n.t === 'final') { const b = line('ln-final'); const tok = newTok(); await typeText(b.appendChild(document.createTextNode('')), n.x, () => 110 * mul(), tok); endTok(tok); await waitNext(g); }
     else if (n.t === 'awaken') { startAwaken(); await sleep(reduced ? 600 : 5400); }
     else if (n.t === 'snow') snowOn = true;
@@ -1325,7 +1783,7 @@ async function run(nodes, g){
 // 관찰하지 않았어도 본문에서 알아본 것은 별로 남긴다. 관찰 보너스는 주지 않는다.
 async function markSeen(id){
   if (state.observed.includes(id)) return;
-  state.observed.push(id); flash = {id, t: performance.now()}; $('obsDot').hidden = false;
+  state.observed.push(id); (state.recognized = state.recognized || []).push(id); flash = {id, t: performance.now()}; $('obsDot').hidden = false;
   const o = OBS[id], ck = constOf(id);
   if (ck && constCount(ck, state.observed) === 2) await sys(`별자리 확인: 「${CONSTS[ck].name}」`);
   if (o.link && state.observed.includes(o.link.with)) await sys(o.link.msg);
@@ -1337,8 +1795,8 @@ async function queryBeat(g){
   openWin('win-query');
   await new Promise(r => { const t = setInterval(() => { if ($('win-query').hidden || g !== gen) { clearInterval(t); r(); } }, 150); });
   if (g !== gen) return hang();
-  await narr({x:'손을 쥐면 쥐어진다. 펴면 펴진다.'}, g);
-  await narr({x:'그게 어떻게 여기까지 왔느냐는 질문의 답은 아니지.'}, g);
+  await narr({x:'손을 쥐면 쥐어진다. 펴면 펼쳐진다.'}, g);
+  await narr({x:'……그게 어떻게 여기까지 왔느냐는 질문의 답은 아니지.'}, g);
 }
 function renderQuery(){
   const row = (k, v, faint) => `<div class="entry"><p><b>${k}</b></p><p class="say${faint ? ' faint' : ''}">${v}</p></div>`;
@@ -1395,7 +1853,7 @@ async function ending(g, kind){
 }
 async function begin(ch = 0, carry = false){
   const g = ++gen; curCh = ch; const C = CHAPTERS[ch];
-  stopSong();
+  stopSong(); setObserver(OBSERVER_AKECHI);
   $('titlep').hidden = true; screen.classList.remove('ended', 'listening', 'goldhot', 'goldout', 'neutral'); clearInterval(clockTimer); awaken = null; bulletFx = null; whiteNight = false; dayGlow = false; screen.classList.remove('brightsky');
   document.querySelector('.tb-user').innerHTML = '<span class="tbl">관측자 </span>아케치 고로';
   textEl.innerHTML = ''; choicesEl.innerHTML = ''; closeAll();
@@ -1855,10 +2313,10 @@ function bulletSound(){
   tone(c, t + 3.6, 1800, 3.2, .02, true); tone(c, t + 3.62, 1830, 3.2, .015, true); // 맞선 꼭짓점의 떨림
   for (let i = 0; i < 6; i++) burst(c, t + 7.07 + i * .06, .07, 3200 + i * 500, 3, .18); // 깨지는 소리
 }
-async function bulletBeat(g){
+async function bulletBeat(g, joint){
   const mon = document.querySelector('.monitor');
   choicesEl.innerHTML = '';
-  const turn = el('button', 'turn', '조커의 차례'); turn.type = 'button'; turn.disabled = true; choicesEl.append(turn);
+  if (!joint) { const turn = el('button', 'turn', '조커의 차례'); turn.type = 'button'; turn.disabled = true; choicesEl.append(turn); }
   announce('조커의 차례. 내려누르는 금빛을 향해 총알 하나가 날아가 박히고, 끝내 꿰뚫는다. 금빛이 갈라지며 백야가 열린다.');
   if (soundOn && master) { master.gain.setTargetAtTime(0, actx.currentTime, .15); bulletSound(); }
   const fx = el('canvas', 'cut fxcv'); fx.setAttribute('aria-hidden', 'true'); fx.width = SW; fx.height = SH; screen.append(fx);
@@ -1867,9 +2325,8 @@ async function bulletBeat(g){
   const B = bulletFx;
   if (!reduced) screen.classList.add('goldhot');
   // ① 금빛이 하늘을 접어 누르며 내려온다
-  await sleep(reduced ? 300 : 2400);
-  screen.classList.add('whitehold');
-  await sleep(reduced ? 200 : 550);
+  await sleep(reduced ? 300 : (joint ? 900 : 2400));
+  if (!joint) { screen.classList.add('whitehold'); await sleep(reduced ? 200 : 550); }
   if (!reduced) { B.aimAt = now(); await sleep(450); }
   // ② 격발: 총알이 위로 날아가 꼭짓점에 박혀 버틴다
   B.shotAt = now();
@@ -1889,8 +2346,7 @@ async function bulletBeat(g){
   fx.remove(); bulletFx = null; whiteNight = false; screen.classList.remove('brightsky', 'goldhot'); choicesEl.innerHTML = '';
   if (reduced) draw(performance.now());
   if (soundOn && master) master.gain.setTargetAtTime(.75, actx.currentTime, .8);
-  await narr({x:'끝이다.'}, g);
-  textEl.innerHTML = '';
+  if (!joint) { await narr({x:'끝이다.'}, g); textEl.innerHTML = ''; }
   if (g !== gen) return hang();
 }
 /* ---------- 진엔딩 노래: 유튜브 공식 플레이어로 재생 ----------
@@ -2003,7 +2459,20 @@ function startSong(){
       w.player = new YT.Player('ytSlot', {width:200, height:200, videoId:SONG.id,
         playerVars:{autoplay:1, playsinline:1, rel:0},
         events:{
-          onReady: e => { if (songWin !== w) return; clearTimeout(w.guard); try { e.target.playVideo(); } catch (_) {} enterSongMode(w); syncLyrics(w); },
+          onReady: e => {
+            if (songWin !== w) return; clearTimeout(w.guard);
+            try { e.target.playVideo(); } catch (_) {}
+            enterSongMode(w); syncLyrics(w);
+            // 아이폰 등 자동 재생이 막힌 기기: 누르면 그 손짓으로 재생한다
+            setTimeout(() => {
+              if (songWin !== w || !w.player || !w.player.getPlayerState) return;
+              let st = -1; try { st = w.player.getPlayerState(); } catch (_) {}
+              if (st === 1 || st === 3) return;
+              const b = el('button', 'btn ytplay', '▶ 눌러서 재생'); b.type = 'button';
+              b.addEventListener('click', ev => { ev.stopPropagation(); try { w.player.playVideo(); } catch (_) {} b.remove(); });
+              w.querySelector('.yt').append(b); b.focus({preventScroll:true});
+            }, 1500);
+          },
           onStateChange: e => { if (songWin === w && e.data === 0) end(); },
           onError: () => fail('이 영상은 여기서 재생할 수 없습니다.')
         }});
@@ -2070,6 +2539,68 @@ function stopSong(){
   if (w.finish) w.finish();
   if (soundOn && master) master.gain.setTargetAtTime(.75, actx.currentTime, .8);
 }
+/* ---------- 3월 20일: 관측자 인계 ---------- */
+const OBSERVER_AKECHI = '아케치 고로', OBSERVER_REN = '아마미야 렌';
+// 칩의 「관측자 」 머리말(좁은 화면에서는 숨는다)은 그대로 두고 이름만 바꾼다
+function chipName(t){
+  const u = document.querySelector('.tb-user'); if (!u) return;
+  let tbl = u.querySelector('.tbl'); if (!tbl) { tbl = el('span', 'tbl', '관측자 '); }
+  u.replaceChildren(tbl, document.createTextNode(t));
+}
+function setObserver(t){ chipName(t); const u = document.querySelector('.tb-user'); if (u) u.classList.toggle('ren', t === OBSERVER_REN); }
+async function handover(phase, g){
+  const u = document.querySelector('.tb-user'); if (!u) return;
+  if (phase === 'out') {
+    // 칩이 지직거리며 깨지고, 비어 버린다
+    const src = OBSERVER_AKECHI, noise = '▒░▓█';
+    if (!reduced) for (let f = 0; f < 9; f++) {
+      chipName([...src].map(c => c === ' ' ? ' ' : (Math.random() < .2 + f * .09 ? noise[(Math.random() * 4) | 0] : c)).join(''));
+      await sleep(70); if (g !== gen) return;
+    }
+    chipName('----'); u.classList.remove('ren');
+    textEl.innerHTML = '';   // 암전: 아케치의 마지막 장면도 함께 꺼진다
+    await sleep(reduced ? 200 : 900);
+    return;
+  }
+  // 새 관측자의 이름이 한 글자씩 써진다
+  u.classList.add('ren'); let typed = ''; chipName('');
+  for (const c of OBSERVER_REN) { typed += c; chipName(typed); if (!reduced) await sleep(85); if (g !== gen) return; }
+  announce('관측자: 아마미야 렌');
+  await sleep(reduced ? 100 : 500);
+}
+// 장갑에 손이 닿는 순간: 아케치가 켜 온 별이 하늘에 희미하게 되살아나고, 그의 기록이 렌에게 넘어온다
+async function inherit(g){
+  await markSeen('r_glove');
+  state.renGrid = performance.now(); state.openLine = true;
+  if (reduced) draw(performance.now());
+  await sys('관측 기록 인계: 아케치 고로 → 아마미야 렌');
+}
+// 그 녀석이 끝내 입 밖에 낸 말만 열려 있다. 끝까지 하지 않은 말은 빈 줄로 남는다.
+// 가장 숨긴 진심(속으로만 쏜 말)은 열리지 않는다.
+const HIDDEN_LINE = '……이제 조금, 살아보고 싶어졌는데.';
+function openedLines(){
+  const said = new Set(saidLines()); said.delete(HIDDEN_LINE);
+  const sw = [...new Set(state.swallowed || [])];
+  return {open: sw.filter(t => said.has(t)), sealed: sw.filter(t => !said.has(t))};
+}
+async function heard(g){
+  const {open, sealed} = openedLines();
+  if (open.length) {
+    await narr({x:'그 녀석이 끝내 꺼낸 말은, 전부 기억한다.'}, g);
+    for (const t of open) {
+      const b = line('ln-heard'); const tok = newTok();
+      await typeText(b.appendChild(document.createTextNode('')), '「' + t + '」', SPD.sys, tok); endTok(tok);
+      await sleep(reduced ? 0 : 350); if (g !== gen) return hang();
+    }
+    await waitNext(g);
+  }
+  if (sealed.length) {
+    const b = line('ln-sealed'); b.setAttribute('role', 'img'); b.setAttribute('aria-label', `봉인된 기록 ${sealed.length}건`);
+    for (let i = 0; i < sealed.length; i++) { b.append(el('span', 'sw-mark inl')); if (!reduced) await sleep(120); if (g !== gen) return hang(); }
+    await narr({x:'끝까지 하지 않은 말이 있었다는 것만은, 안다.'}, g);
+    await narr({x:'그건, 다음 판에 들으면 된다.'}, g);
+  }
+}
 /* 날짜 이동 (제작자 전용) */
 function devOn(){ try { return location.hash === '#dev' || localStorage.getItem('bwn.dev') === '1'; } catch (e) { return location.hash === '#dev'; } }
 // 앞선 기록이 없을 때 쓰는 표준 상태: 평균적인 플레이를 가정한다
@@ -2133,7 +2664,24 @@ function draw(t){
   } else
   // 관측한 별자리: 별자리마다 색이 있고, 아직 켜지지 않은 자리는 흐린 점으로 미리 보인다
   if (state.starsGone) {
-    if (state.openLine && (state.observed || []).includes('glove')) { sx.fillStyle = rgb(C.paper); const a = deskPos('glove'); dline(a, [Math.round(a[0] + (SW - a[0]) * .6), Math.round(a[1] * .4)]); }
+    if (state.renGrid) {
+      // 아케치가 켜 온 별: 희미한 점으로만 되살아난다
+      const k = Math.min(1, (t - state.renGrid) / 1800);
+      sx.fillStyle = rgb(C.frost);
+      for (const id of state.observed || []) { if (!POS[id] || id.startsWith('r_') || OBS[id].ch >= 5) continue; const [x, y] = deskPos(id); sx.globalAlpha = .45 * k; sx.fillRect(x, y, 1, 1); }
+      sx.globalAlpha = 1;
+    }
+    if (state.openLine) {
+      const a = deskPos('glove'), end = [Math.round(a[0] + (SW - a[0]) * .6), Math.round(a[1] * .4)];
+      if (state.solidLine) {
+        // 장갑을 쥐면 끊긴 선이 실선이 되어 화면 밖까지 이어진다
+        const dx = end[0] - a[0], dy = end[1] - a[1], far = [Math.round(a[0] + dx * 4), Math.round(a[1] + dy * 4)];
+        const q = Math.min(1, (t - state.solidLine) / 1200), n = Math.max(Math.abs(far[0] - a[0]), Math.abs(far[1] - a[1])), m = Math.round(n * q);
+        sx.fillStyle = CONSTS.hand.color;
+        for (let j = 2; j <= m; j++) sx.fillRect(Math.round(a[0] + (far[0] - a[0]) * j / n), Math.round(a[1] + (far[1] - a[1]) * j / n), 1, 1);
+        sx.fillStyle = rgb(C.paper); sx.fillRect(a[0] - 1, a[1], 3, 1); sx.fillRect(a[0], a[1] - 1, 1, 3);
+      } else { sx.fillStyle = rgb(C.paper); dline(a, end); }
+    }
   } else
   if (!screen.classList.contains('ended')) {
     const obs = state.observed || [], missed = state.missed || [];
@@ -2145,6 +2693,19 @@ function draw(t){
         const a = deskPos(ss[i]), b = deskPos(ss[i + 1]);
         if (complete) { const n = Math.max(Math.abs(b[0] - a[0]), Math.abs(b[1] - a[1])); for (let j = 3; j < n - 3; j++) sx.fillRect(Math.round(a[0] + (b[0] - a[0]) * j / n), Math.round(a[1] + (b[1] - a[1]) * j / n), 1, 1); }
         else dline(a, b);
+        // 질문 대조에서 내민 별은 이웃 별과 흰 실선으로 이어진다. 막 내민 별에서부터 선이 뻗어 나간다.
+        const pr = state.presented || [];
+        if (pr.includes(ss[i]) || pr.includes(ss[i + 1])) {
+          let from = a, to = b, q = 1;
+          if (linkAnim && (linkAnim.id === ss[i] || linkAnim.id === ss[i + 1])) {
+            q = Math.min(1, (t - linkAnim.t) / 700);
+            if (linkAnim.id === ss[i + 1]) { from = b; to = a; }
+          }
+          const n = Math.max(Math.abs(to[0] - from[0]), Math.abs(to[1] - from[1])), m = Math.round(n * q);
+          sx.save(); sx.fillStyle = rgb(C.paper); sx.globalAlpha = .95;
+          for (let j = 2; j <= m; j++) sx.fillRect(Math.round(from[0] + (to[0] - from[0]) * j / n), Math.round(from[1] + (to[1] - from[1]) * j / n), 1, 1);
+          sx.restore(); sx.fillStyle = col;
+        }
       }
       for (const s of K.slots) for (const id of s.split('|')) {
         if (!POS[id]) continue;
